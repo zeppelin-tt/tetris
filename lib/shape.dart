@@ -23,22 +23,6 @@ class Shape {
 
   bool get isMotEmpty => block.location.isNotEmpty;
 
-  void moveDown() {
-    oldBlock.location = List.of(block.location);
-    block.moveDown();
-  }
-
-  void moveRight(int pixels) {
-    oldBlock.location = List.of(block.location);
-    block.moveRight(pixels);
-  }
-
-  void moveLeft(int pixels) {
-    oldBlock.location = List.of(block.location);
-    block.moveLeft(pixels);
-  }
-
-
   void changeLocation(List<int> newLocation) {
     oldBlock.location = List.of(block.location);
     block.changeLocation(newLocation);

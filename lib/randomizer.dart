@@ -9,25 +9,25 @@ class Randomizer {
   static final _rnd = Random();
 
   static final startBlocks = <Block>[
-    Smashboy([-14, -13, -4, -3]),
-    OrangeRicky([-24, -23, -13, -3]),
-    OrangeRicky([-15, -14, -13, -5]),
-    OrangeRicky([-15, -7, -6, -5]),
-    OrangeRicky([-26, -16, -6, -5]),
-    BlueRicky([-24, -23, -14, -4]),
-    BlueRicky([-16, -6, -5, -4]),
-    BlueRicky([-25, -15, -6, -5]),
-    BlueRicky([-15, -14, -13, -3]),
-    RhodeIsland([-16, -15, -7, -6]),
-    RhodeIsland([-26, -16, -15, -5]),
-    Cleveland([-16, -15, -5, -4]),
-    Cleveland([-24, -15, -14, -5]),
-    HeroBlock([-7, -6, -5, -4]),
-    HeroBlock([-35, -25, -15, -5]),
-    Teewee([-16, -15, -14, -5]),
-    Teewee([-25, -16, -15, -5]),
-    Teewee([-15, -6, -5, -4]),
-    Teewee([-26, -16, -15, -6]),
+    Smashboy([-19, -18, -7, -6]),
+    OrangeRicky([-31, -19, -7, -6]),
+    OrangeRicky([-31, -30, -18, -6]),
+    OrangeRicky([-18, -8, -7, -6]),
+    OrangeRicky([-20, -19, -18, -8]),
+    BlueRicky([-7, -6, -18, -30]),
+    BlueRicky([-20, -8, -7, -6]),
+    BlueRicky([-7, -19, -31, -30]),
+    BlueRicky([-6, -18, -19, -20]),
+    RhodeIsland([-8, -7, -19, -18]),
+    RhodeIsland([-6, -18, -19, -31]),
+    Cleveland([-6, -7, -19, -20]),
+    Cleveland([-7, -19, -18, -30]),
+    HeroBlock([-8, -7, -6, -5]),
+    HeroBlock([-7, -19, -31, -43]),
+    Teewee([-8, -7, -6, -19]),
+    Teewee([-7, -19, -31, -18]),
+    Teewee([-6, -18, -30, -19]),
+    Teewee([-20, -19, -18, -7]),
   ];
 
   static const colorList = [
@@ -35,7 +35,6 @@ class Randomizer {
     Colors.orange,
     Colors.green,
     Colors.greenAccent,
-    Colors.brown,
     Colors.amber,
     Colors.yellowAccent,
     Colors.indigoAccent,
@@ -44,7 +43,7 @@ class Randomizer {
 
   static Color get color => colorList[_rnd.nextInt(colorList.length)];
 
-  static Block get block => startBlocks[_rnd.nextInt(startBlocks.length)];
+  static Block get block => startBlocks[_rnd.nextInt(startBlocks.length)].copyWith();
 
-  // static Shape get shape => Shape(block, color);
+  static Shape get shape => Shape(block: block, color: color, oldBlock: EmptyBlock());
 }

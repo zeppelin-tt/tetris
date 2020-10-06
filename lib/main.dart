@@ -28,33 +28,38 @@ class GamePage extends StatelessWidget {
           final glassHeight = constraints.biggest.height - bottomHeight;
           // print(bottomHeight);
           // print(glassHeight);
-          final rectSize = glassHeight / 20;
+          final rectSize = glassHeight / 21;
           // print(rectSize);
           return BlocProvider<GameCubit>(
-            create: (context) => GameCubit()..clearGlass()..startGame(),
+            create: (context) => GameCubit()
+              ..clearGlass()
+              ..startGame(),
             child: BlocBuilder<GameCubit, GameState>(builder: (context, game) {
               return Column(
                 mainAxisAlignment: MainAxisAlignment.end,
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   Container(
-                    width: rectSize * 10,
+                    width: rectSize * 12,
                     height: glassHeight,
                     color: Colors.blueGrey,
                     child: GridView.count(
                       shrinkWrap: true,
-                      crossAxisCount: 10,
-                      children: List.generate(200, (index) {
-                        return Center(
-                          child: Container(
-                            height: rectSize * .9,
-                            width: rectSize * .9,
-                            decoration: BoxDecoration(
-                              color: game.glass[index],
-                              borderRadius: BorderRadius.circular(rectSize * .9 * .12),
-                            ),
-                          ),
-                        );
+                      crossAxisCount: 12,
+                      children: List.generate(252, (index) {
+                        return game.glass[index] == Colors.white
+                            ? Container()
+                            : Center(
+                                child: Container(
+                                  height: rectSize * .9,
+                                  width: rectSize * .9,
+                                  decoration: BoxDecoration(
+                                    color: game.glass[index],
+                                    borderRadius: BorderRadius.circular(rectSize * .9 * .12),
+                                  ),
+                                  child: Center(child: Text(index.toString(), style: TextStyle(color: Colors.yellow))),
+                                ),
+                              );
                       }),
                     ),
                   ),
