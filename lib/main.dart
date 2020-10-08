@@ -79,16 +79,16 @@ class GamePage extends StatelessWidget {
                             child: Icon(Icons.chevron_left, color: Colors.black),
                           ),
                         ),
-                        Container(
-                          height: 50.0,
-                          width: 50.0,
-                          color: Colors.yellow,
-                          child: FlatButton(
-                            color: Colors.yellow,
-                            onPressed: () => context.bloc<GameCubit>().fastDown(),
-                            child: Icon(Icons.arrow_drop_down_sharp, color: Colors.black),
-                          ),
-                        ),
+                        // Container(
+                        //   height: 50.0,
+                        //   width: 50.0,
+                        //   color: Colors.yellow,
+                        //   child: FlatButton(
+                        //     color: Colors.yellow,
+                        //     onPressed: () => context.bloc<GameCubit>().fastDown(),
+                        //     child: Icon(Icons.arrow_drop_down_sharp, color: Colors.black),
+                        //   ),
+                        // ),
                         Container(
                           height: 50.0,
                           width: 50.0,
