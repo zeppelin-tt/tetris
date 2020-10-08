@@ -11,8 +11,11 @@ import 'randomizer.dart';
 
 class GameCubit extends Cubit<GameState> {
   Shape _shape;
+  Duration _duration;
+  bool onPause = false;
 
-  GameCubit() : super(GameState({})) {
+  GameCubit(Duration initialDuration) : super(GameState({})) {
+    _duration = initialDuration;
     _shape = Shape.empty();
   }
 
@@ -29,18 +32,35 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void startGame() {
-    _shape = Randomizer.shape;
-    _shapeToGlass();
-    const duration = Duration(milliseconds: 500);
-    Timer.periodic(duration, (timer) {
+    if (_shape.isEmpty) {
+      _shape = Randomizer.shape;
+      _shapeToGlass();
+    }
+    Future.doWhile(() async {
       if (_moveDown()) {
-        return;
+        await Future.delayed(_duration);
+        return !onPause;
       }
       _burningLines();
       _shape = Randomizer.shape;
       _shapeToGlass();
+      await Future.delayed(_duration);
+      return !onPause;
     });
   }
+
+  void togglePause() {
+    if (onPause) {
+      onPause = false;
+      startGame();
+      return;
+    }
+    onPause = true;
+  }
+
+  void setDuration(Duration duration) => this._duration = duration;
+
+  bool isGameOver() => state.glassLines.keys.any((p) => _shape.block.location.contains(p));
 
   void toRight() {
     final possibleBlock = block.tryMoveRight(1);
