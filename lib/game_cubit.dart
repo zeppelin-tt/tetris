@@ -23,6 +23,7 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void newGame() {
+    onPause = false;
     clearGlass();
     startGame();
   }

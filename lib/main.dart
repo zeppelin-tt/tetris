@@ -32,7 +32,8 @@ class GamePage extends StatelessWidget {
           final rectSize = glassHeight / 21;
           // print(rectSize);
           return BlocProvider<GameCubit>(
-            create: (context) => GameCubit(initialDuration: Duration(milliseconds: 800))
+            lazy: false,
+            create: (context) => GameCubit(initialDuration: Duration(milliseconds: 400))
               ..clearGlass()
               ..startGame(),
             child: BlocConsumer<GameCubit, GameState>(
@@ -134,9 +135,9 @@ class GamePage extends StatelessWidget {
   }
 }
 
-void gameOverDialog(BuildContext context) {
+void gameOverDialog(BuildContext appContext) {
   showDialog<void>(
-    context: context,
+    context: appContext,
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -149,10 +150,9 @@ void gameOverDialog(BuildContext context) {
             child: Text('Yes please!'),
             onPressed: () {
               Navigator.of(context).pop();
-              context.bloc<GameCubit>().newGame();
+              appContext.bloc<GameCubit>().newGame();
             },
           ),
-          Spacer(),
           TextButton(
             child: Text('Exit the game'),
             onPressed: () => SystemNavigator.pop(),
