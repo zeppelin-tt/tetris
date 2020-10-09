@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 
 class GameState {
   Map<int, Color> glass;
+  bool isGameOver;
 
-  GameState(this.glass);
+  GameState({
+    @required this.glass,
+    this.isGameOver = false,
+  });
 
   List<int> get occupiedPixels {
     return glass.entries.where((e) => e.value != Colors.black).map((e) => e.key).toList();
@@ -25,6 +29,16 @@ class GameState {
       }
     });
     return glassMap;
+  }
+
+  GameState copyWith({
+    Map<int, Color> glass,
+    bool isGameOver,
+  }) {
+    return GameState(
+      glass: glass ?? this.glass,
+      isGameOver: isGameOver ?? this.isGameOver,
+    );
   }
 
   @override

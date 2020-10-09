@@ -2,18 +2,18 @@ import 'package:flutter/material.dart';
 
 import 'blocks.dart';
 
-class Shape {
+class ShapeState {
   Block block;
   Block oldBlock;
   Color color;
 
-  Shape({
+  ShapeState({
     this.block,
     this.color,
     this.oldBlock,
   });
 
-  Shape.empty() {
+  ShapeState.empty() {
     block = EmptyBlock();
     oldBlock = EmptyBlock();
     color = Colors.black;
@@ -21,18 +21,18 @@ class Shape {
 
   bool get isEmpty => block.location.isEmpty;
 
-  bool get isMotEmpty => block.location.isNotEmpty;
+  bool get isNotEmpty => block.location.isNotEmpty;
 
   void changeLocation(List<int> newLocation) {
     oldBlock.location = List.of(block.location);
     block.changeLocation(newLocation);
   }
 
-  Shape copyWith({
+  ShapeState copyWith({
     Block block,
     Block oldBlock,
     Color color,
-  }) => Shape(
+  }) => ShapeState(
         block: block ?? this.block,
         oldBlock: oldBlock ?? this.oldBlock,
         color: color ?? this.color,

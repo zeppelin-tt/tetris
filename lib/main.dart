@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'game_cubit.dart';
@@ -31,12 +32,14 @@ class GamePage extends StatelessWidget {
           final rectSize = glassHeight / 21;
           // print(rectSize);
           return BlocProvider<GameCubit>(
-            create: (context) => GameCubit(Duration(milliseconds: 500))
+            create: (context) => GameCubit(initialDuration: Duration(milliseconds: 800))
               ..clearGlass()
               ..startGame(),
             child: BlocConsumer<GameCubit, GameState>(
               listener: (BuildContext context, state) {
-
+                if (state.isGameOver) {
+                  gameOverDialog(context);
+                }
               },
               builder: (context, game) {
                 return Column(
@@ -61,8 +64,7 @@ class GamePage extends StatelessWidget {
                                       color: game.glass[index],
                                       borderRadius: BorderRadius.circular(rectSize * .9 * .12),
                                     ),
-                                    child:
-                                        Center(child: Text(index.toString(), style: TextStyle(color: Colors.yellow))),
+                                    // child: Center(child: Text(index.toString(), style: TextStyle(color: Colors.yellow))),
                                   ),
                                 );
                         }),
@@ -74,13 +76,14 @@ class GamePage extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.center,
                         mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          Container(
-                            height: 50.0,
-                            width: 50.0,
-                            color: Colors.yellow,
-                            child: FlatButton(
+                          GestureDetector(
+                            onLongPressStart: (_) => context.bloc<GameCubit>().toLeftFast(),
+                            onLongPressEnd: (_) => context.bloc<GameCubit>().stopLeftMove(),
+                            onTap: () => context.bloc<GameCubit>().toLeft(),
+                            child: Container(
+                              height: 50.0,
+                              width: 50.0,
                               color: Colors.yellow,
-                              onPressed: () => context.bloc<GameCubit>().toLeft(),
                               child: Icon(Icons.chevron_left, color: Colors.black),
                             ),
                           ),
@@ -94,13 +97,14 @@ class GamePage extends StatelessWidget {
                               child: Icon(Icons.pause_outlined, color: Colors.black),
                             ),
                           ),
-                          Container(
-                            height: 50.0,
-                            width: 50.0,
-                            color: Colors.yellow,
-                            child: FlatButton(
+                          GestureDetector(
+                            onLongPressStart: (_) => context.bloc<GameCubit>().toRightFast(),
+                            onLongPressEnd: (_) => context.bloc<GameCubit>().stopRightMove(),
+                            onTap: () => context.bloc<GameCubit>().toRight(),
+                            child: Container(
+                              height: 50.0,
+                              width: 50.0,
                               color: Colors.yellow,
-                              onPressed: () => context.bloc<GameCubit>().toRight(),
                               child: Icon(Icons.chevron_right, color: Colors.black),
                             ),
                           ),
@@ -128,4 +132,33 @@ class GamePage extends StatelessWidget {
       ),
     );
   }
+}
+
+void gameOverDialog(BuildContext context) {
+  showDialog<void>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        title: Text('Game Over'),
+        content: SingleChildScrollView(
+          child: Text('Would you like to play again?'),
+        ),
+        actions: <Widget>[
+          TextButton(
+            child: Text('Yes please!'),
+            onPressed: () {
+              Navigator.of(context).pop();
+              context.bloc<GameCubit>().newGame();
+            },
+          ),
+          Spacer(),
+          TextButton(
+            child: Text('Exit the game'),
+            onPressed: () => SystemNavigator.pop(),
+          ),
+        ],
+      );
+    },
+  );
 }

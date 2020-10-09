@@ -9,7 +9,7 @@ class Block {
 
   Block tryMoveRight(int pixels) => copyWith(location: List.of(location.map((i) => i + pixels)));
 
-  Block tryMoveDown() => copyWith(location: List.of(location.map((i) => i + 12)));
+  Block tryMoveDown([int pixels = 1]) => copyWith(location: List.of(location.map((i) => i + 12 * pixels)));
 
   Block tryMoveLeft(int pixels) => copyWith(location: List.of(location.map((i) => i - pixels)));
 
@@ -49,6 +49,7 @@ class Block {
       lines.sort();
     }
     final collisionDistribution = lines.map((p) => collisionLines.contains(p)).toList();
+    //todo: count from Shape
     var leftPartCollisionCounter = .0;
     for (var i = 0; i < (collisionDistribution.length / 2).round(); i++) {
       if (collisionDistribution[i]) {
@@ -81,8 +82,9 @@ class EmptyBlock extends Block {
   @override
   EmptyBlock copyWith({
     List<int> location,
-  }) =>
-      EmptyBlock();
+  }) {
+    return EmptyBlock();
+  }
 }
 
 class HeroBlock extends Block {
@@ -137,7 +139,6 @@ class Teewee extends Block {
 
   @override
   Block tryTwist() {
-
     location.sort();
     if (location.first + 1 == location[1]) {
       return copyWith(location: [location[0], location[1], location[2] - 13, location[3]]);
