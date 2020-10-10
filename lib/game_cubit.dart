@@ -121,6 +121,7 @@ class GameCubit extends Cubit<GameState> {
 
 
   void twist() {
+    if (onPause) return;
     Block possibleBlock = block.tryTwist();
     final collisionPixels = _collisionPixels(possibleBlock.location);
     if (collisionPixels.isEmpty) {
@@ -161,6 +162,28 @@ class GameCubit extends Cubit<GameState> {
     return true;
   }
 
+  void moveDown() {
+    if (onPause) return;
+    _moveDown();
+  }
+
+  void toDownFast() {
+    onPause = true;
+    onFastMoving = true;
+    Future.doWhile(() async {
+      if (_moveDown()) {
+        await Future.delayed(const Duration(milliseconds: 60));
+        return onFastMoving;
+      }
+      onFastMoving = false;
+      onPause = false;
+      startGame();
+      return false;
+    });
+  }
+
+  void stopDownMove() => onFastMoving = false;
+
   void _burningLines() {
     final glassLines = state.glassLines;
     Map<int, Color> tempoMap = {};
@@ -196,6 +219,4 @@ class GameCubit extends Cubit<GameState> {
     }
     return map..addAll(pixels.map((key, value) => MapEntry(key + 12, value)));
   }
-
-  fastDown() {}
 }

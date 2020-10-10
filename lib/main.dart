@@ -25,8 +25,10 @@ class GamePage extends StatelessWidget {
       color: Colors.black,
       child: SafeArea(
         child: LayoutBuilder(builder: (context, constraints) {
-          final bottomHeight = constraints.biggest.height * .2;
+          final width = constraints.biggest.width;
+          final bottomHeight = constraints.biggest.height * .3;
           final glassHeight = constraints.biggest.height - bottomHeight;
+          final buttonSize = width * .17;
           // print(bottomHeight);
           // print(glassHeight);
           final rectSize = glassHeight / 21;
@@ -50,13 +52,13 @@ class GamePage extends StatelessWidget {
                     Container(
                       width: rectSize * 12,
                       height: glassHeight,
-                      color: Colors.blueGrey,
+                      color: Colors.black,
                       child: GridView.count(
                         shrinkWrap: true,
                         crossAxisCount: 12,
                         children: List.generate(252, (index) {
                           return game.glass[index] == Colors.white
-                              ? Container()
+                              ? Container(height: .0, width: .0)
                               : Center(
                                   child: Container(
                                     height: rectSize * .9,
@@ -74,53 +76,109 @@ class GamePage extends StatelessWidget {
                     Container(
                       height: bottomHeight,
                       child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                         children: [
-                          GestureDetector(
-                            onLongPressStart: (_) => context.bloc<GameCubit>().toLeftFast(),
-                            onLongPressEnd: (_) => context.bloc<GameCubit>().stopLeftMove(),
-                            onTap: () => context.bloc<GameCubit>().toLeft(),
-                            child: Container(
-                              height: 50.0,
-                              width: 50.0,
-                              color: Colors.yellow,
-                              child: Icon(Icons.chevron_left, color: Colors.black),
+                          SizedBox(width: width * .035),
+                          SizedBox(
+                            height: width * .325,
+                            width: width * .45,
+                            child: Stack(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    GestureDetector(
+                                      onLongPressStart: (_) => context.bloc<GameCubit>().toLeftFast(),
+                                      onLongPressEnd: (_) => context.bloc<GameCubit>().stopLeftMove(),
+                                      onTap: () => context.bloc<GameCubit>().toLeft(),
+                                      child: ClipOval(
+                                        child: Container(
+                                          height: buttonSize,
+                                          width: buttonSize,
+                                          color: Colors.yellow,
+                                          child: Icon(Icons.chevron_left, color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                    GestureDetector(
+                                      onLongPressStart: (_) => context.bloc<GameCubit>().toRightFast(),
+                                      onLongPressEnd: (_) => context.bloc<GameCubit>().stopRightMove(),
+                                      onTap: () => context.bloc<GameCubit>().toRight(),
+                                      child: ClipOval(
+                                        child: Container(
+                                          height: buttonSize,
+                                          width: buttonSize,
+                                          color: Colors.yellow,
+                                          child: Icon(Icons.chevron_right, color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Align(
+                                  alignment: Alignment.bottomCenter,
+                                  child: GestureDetector(
+                                    onLongPressStart: (_) => context.bloc<GameCubit>().toDownFast(),
+                                    onLongPressEnd: (_) => context.bloc<GameCubit>().stopDownMove(),
+                                    onTap: () => context.bloc<GameCubit>().moveDown(),
+                                    child: ClipOval(
+                                      child: Container(
+                                        height: buttonSize,
+                                        width: buttonSize,
+                                        color: Colors.yellow,
+                                        child: Center(
+                                          child: Icon(Icons.keyboard_arrow_down, color: Colors.black),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          Container(
-                            height: 50.0,
-                            width: 50.0,
-                            color: Colors.yellow,
-                            child: FlatButton(
-                              color: Colors.yellow,
-                              onPressed: () => context.bloc<GameCubit>().togglePause(),
-                              child: Icon(Icons.pause_outlined, color: Colors.black),
+                          Spacer(),
+                          SizedBox(
+                            width: width * .45,
+                            child: Column(
+                              children: [
+                                SizedBox(
+                                  height: glassHeight * .11,
+                                  child: Row(
+                                    children: [
+                                      GestureDetector(
+                                        onTap: () => context.bloc<GameCubit>().togglePause(),
+                                        child: ClipOval(
+                                          child: Container(
+                                            height: buttonSize * 0.35,
+                                            width: buttonSize * 0.35,
+                                            color: Colors.blue,
+                                            child: Center(
+                                              child: Icon(Icons.pause, color: Colors.black, size: width * .03),
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Align(
+                                  alignment: Alignment.centerRight,
+                                  child: ClipOval(
+                                    child: Container(
+                                      height: buttonSize * 1.55,
+                                      width: buttonSize * 1.55,
+                                      color: Colors.yellow,
+                                      child: FlatButton(
+                                        color: Colors.yellow,
+                                        onPressed: () => context.bloc<GameCubit>().twist(),
+                                        child: Icon(Icons.autorenew, color: Colors.black),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
-                          GestureDetector(
-                            onLongPressStart: (_) => context.bloc<GameCubit>().toRightFast(),
-                            onLongPressEnd: (_) => context.bloc<GameCubit>().stopRightMove(),
-                            onTap: () => context.bloc<GameCubit>().toRight(),
-                            child: Container(
-                              height: 50.0,
-                              width: 50.0,
-                              color: Colors.yellow,
-                              child: Icon(Icons.chevron_right, color: Colors.black),
-                            ),
-                          ),
-                          ClipOval(
-                            child: Container(
-                              height: 75.0,
-                              width: 75.0,
-                              color: Colors.yellow,
-                              child: FlatButton(
-                                color: Colors.yellow,
-                                onPressed: () => context.bloc<GameCubit>().twist(),
-                                child: Icon(Icons.autorenew, color: Colors.black),
-                              ),
-                            ),
-                          ),
+                          SizedBox(width: width * .035),
                         ],
                       ),
                     )
