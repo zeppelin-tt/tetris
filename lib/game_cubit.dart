@@ -266,7 +266,7 @@ class GameCubit extends Cubit<GameState> {
   }
 
   Duration _getDuration(int level) {
-    var mills = 700;
+    var mills = firstLevelDurationMills;
     for (var i = 1; i != level; i++) {
       mills = (mills * .85).floor();
     }

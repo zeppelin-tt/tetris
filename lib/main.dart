@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'components/tetris_button.dart';
 import 'game_cubit.dart';
 import 'game_state.dart';
 
@@ -95,7 +96,9 @@ class GamePage extends StatelessWidget {
                               width: rectSize * 10.28,
                               height: glassHeight - rectSize * .86,
                               decoration: BoxDecoration(
-                                color: game.onPause && !game.isGameOver ? Colors.black.withOpacity(.8) : Colors.transparent,
+                                color: game.onPause && !game.isGameOver
+                                    ? Colors.black.withOpacity(.8)
+                                    : Colors.transparent,
                                 border: Border(
                                   left: BorderSide(color: Colors.yellow, width: 2.0),
                                   right: BorderSide(color: Colors.yellow, width: 2.0),
@@ -169,50 +172,39 @@ class GamePage extends StatelessWidget {
                                 Row(
                                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                   children: [
-                                    GestureDetector(
+                                    TetrisButton(
+                                      size: buttonSize,
+                                      icon: Icons.chevron_left,
+                                      color: Colors.yellow,
+                                      onPressColor: Colors.yellow.withOpacity(.8),
+                                      iconSize: width * .06,
+                                      onTap: () => context.bloc<GameCubit>().toLeft(),
                                       onLongPressStart: (_) => context.bloc<GameCubit>().toLeftFast(),
                                       onLongPressEnd: (_) => context.bloc<GameCubit>().stopLeftMove(),
-                                      onTap: () => context.bloc<GameCubit>().toLeft(),
-                                      child: ClipOval(
-                                        child: Container(
-                                          height: buttonSize,
-                                          width: buttonSize,
-                                          color: Colors.yellow,
-                                          child: Icon(Icons.chevron_left, color: Colors.black),
-                                        ),
-                                      ),
                                     ),
-                                    GestureDetector(
+                                    TetrisButton(
+                                      size: buttonSize,
+                                      icon: Icons.chevron_right,
+                                      color: Colors.yellow,
+                                      onPressColor: Colors.yellow.withOpacity(.8),
+                                      iconSize: width * .06,
+                                      onTap: () => context.bloc<GameCubit>().toRight(),
                                       onLongPressStart: (_) => context.bloc<GameCubit>().toRightFast(),
                                       onLongPressEnd: (_) => context.bloc<GameCubit>().stopRightMove(),
-                                      onTap: () => context.bloc<GameCubit>().toRight(),
-                                      child: ClipOval(
-                                        child: Container(
-                                          height: buttonSize,
-                                          width: buttonSize,
-                                          color: Colors.yellow,
-                                          child: Icon(Icons.chevron_right, color: Colors.black),
-                                        ),
-                                      ),
                                     ),
                                   ],
                                 ),
                                 Align(
                                   alignment: Alignment.bottomCenter,
-                                  child: GestureDetector(
+                                  child: TetrisButton(
+                                    size: buttonSize,
+                                    icon: Icons.keyboard_arrow_down,
+                                    color: Colors.yellow,
+                                    onPressColor: Colors.yellow.withOpacity(.8),
+                                    iconSize: width * .06,
+                                    onTap: () => context.bloc<GameCubit>().moveDown(),
                                     onLongPressStart: (_) => context.bloc<GameCubit>().toDownFast(),
                                     onLongPressEnd: (_) => context.bloc<GameCubit>().stopDownMove(),
-                                    onTap: () => context.bloc<GameCubit>().moveDown(),
-                                    child: ClipOval(
-                                      child: Container(
-                                        height: buttonSize,
-                                        width: buttonSize,
-                                        color: Colors.yellow,
-                                        child: Center(
-                                          child: Icon(Icons.keyboard_arrow_down, color: Colors.black),
-                                        ),
-                                      ),
-                                    ),
                                   ),
                                 ),
                               ],
@@ -227,22 +219,13 @@ class GamePage extends StatelessWidget {
                                   height: glassHeight * .11,
                                   child: Row(
                                     children: [
-                                      GestureDetector(
+                                      TetrisButton(
+                                        size: buttonSize * 0.45,
+                                        icon: game.onPause ? Icons.play_arrow : Icons.pause,
+                                        color: Colors.blue,
+                                        onPressColor: Colors.blue.withOpacity(.8),
+                                        iconSize: width * .06,
                                         onTap: () => context.bloc<GameCubit>().togglePause(),
-                                        child: ClipOval(
-                                          child: Container(
-                                            height: buttonSize * 0.45,
-                                            width: buttonSize * 0.45,
-                                            color: Colors.blue,
-                                            child: Center(
-                                              child: Icon(
-                                                game.onPause ? Icons.play_arrow : Icons.pause,
-                                                color: Colors.black,
-                                                size: width * .06,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
                                       ),
                                     ],
                                   ),
@@ -251,17 +234,13 @@ class GamePage extends StatelessWidget {
                                   alignment: Alignment.centerRight,
                                   child: Padding(
                                     padding: EdgeInsets.only(top: buttonSize * .15),
-                                    child: ClipOval(
-                                      child: Container(
-                                        height: buttonSize * 1.55,
-                                        width: buttonSize * 1.55,
-                                        color: Colors.yellow,
-                                        child: FlatButton(
-                                          color: Colors.yellow,
-                                          onPressed: () => context.bloc<GameCubit>().twist(),
-                                          child: Icon(Icons.autorenew, color: Colors.black),
-                                        ),
-                                      ),
+                                    child: TetrisButton(
+                                      size: buttonSize * 1.55,
+                                      icon: Icons.autorenew,
+                                      color: Colors.yellow,
+                                      onPressColor: Colors.yellow.withOpacity(.8),
+                                      iconSize: 25.0,
+                                      onTapDown: (_) => context.bloc<GameCubit>().twist(),
                                     ),
                                   ),
                                 ),
