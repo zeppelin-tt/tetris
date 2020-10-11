@@ -1,16 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:tetris/randomizer.dart';
+import 'package:tetris/shape.dart';
+
+import 'blocks.dart';
 
 class GameState {
   Map<int, Color> glass;
   bool isGameOver;
+  Shape shape;
+  Shape nextShape;
+  Block oldBlock;
 
   GameState({
-    @required this.glass,
+    this.glass,
+    this.shape,
+    this.nextShape,
+    this.oldBlock,
     this.isGameOver = false,
   });
 
   List<int> get occupiedPixels {
     return glass.entries.where((e) => e.value != Colors.black).map((e) => e.key).toList();
+  }
+
+  void changeLocation(List<int> newLocation) {
+    oldBlock.location = List.of(shape.block.location);
+    shape.block.changeLocation(newLocation);
+  }
+
+  void onNextShape() {
+    shape = nextShape.copyWith();
+    nextShape = Randomizer.shape;
   }
 
   Map<int, Map<int, Color>> get glassLines {
@@ -34,10 +54,16 @@ class GameState {
   GameState copyWith({
     Map<int, Color> glass,
     bool isGameOver,
+    Shape shape,
+    Shape nextShape,
+    Block oldBlock,
   }) {
     return GameState(
       glass: glass ?? this.glass,
       isGameOver: isGameOver ?? this.isGameOver,
+      shape: shape ?? this.shape,
+      nextShape: nextShape ?? this.nextShape,
+      oldBlock: oldBlock ?? this.oldBlock,
     );
   }
 

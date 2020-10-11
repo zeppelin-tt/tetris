@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:tetris/shape_state.dart';
+import 'package:tetris/shape.dart';
 
 import 'blocks.dart';
 
@@ -17,7 +17,7 @@ class Randomizer {
     Colors.blue,
   ];
 
-  static ShapeState get shape {
+  static Shape get shape {
     Block block;
     final blocks = Blocks.values;
     switch (blocks[_rnd.nextInt(Blocks.values.length)]) {
@@ -43,7 +43,7 @@ class Randomizer {
         block = Teewee(Teewee.initStates[_rnd.nextInt(Teewee.initStates.length)]);
         break;
     }
-    return ShapeState(block: block, color: color, oldBlock: EmptyBlock());
+    return Shape(block: block, color: color);
   }
 
   static Color get color => colorList[_rnd.nextInt(colorList.length)];

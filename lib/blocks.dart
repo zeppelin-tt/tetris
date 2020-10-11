@@ -17,8 +17,9 @@ class Block {
 
   Block copyWith({
     List<int> location,
-  }) =>
-      Block(location ?? this.location);
+  }) {
+    return Block(location ?? this.location);
+  }
 
   @override
   String toString() {

@@ -3,23 +3,21 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tetris/blocks.dart';
-import 'package:tetris/shape_state.dart';
+import 'package:tetris/shape.dart';
 
 import 'constants.dart';
 import 'game_state.dart';
 import 'randomizer.dart';
 
 class GameCubit extends Cubit<GameState> {
-  ShapeState _shapeState;
   Duration _duration;
   bool onPause = false;
   bool onFastMoving = false;
 
   GameCubit({
     @required Duration initialDuration,
-  }) : super(GameState(glass: {})) {
+  }) : super(GameState(glass: {}, oldBlock: Block([]), shape: Shape.empty(), nextShape: Shape.empty())) {
     _duration = initialDuration;
-    _shapeState = ShapeState.empty();
   }
 
   void newGame() {
@@ -37,12 +35,13 @@ class GameCubit extends Cubit<GameState> {
       }
       glass[i] = Colors.black;
     }
-    emit(GameState(glass: glass));
+    emit(state.copyWith(glass: glass, isGameOver: false));
   }
 
   void startGame() {
-    if (_shapeState.isEmpty) {
-      _shapeState = Randomizer.shape;
+    if (state.shape.isEmpty) {
+      state.shape = Randomizer.shape;
+      state.nextShape = Randomizer.shape;
       _shapeToGlass();
     }
     Future.doWhile(() async {
@@ -51,19 +50,22 @@ class GameCubit extends Cubit<GameState> {
         return !onPause;
       }
       _burningLines();
-      _gameOverCondition();
-      _shapeState = Randomizer.shape;
-      _shapeToGlass();
+      if (!_gameOverCondition()) {
+        state.onNextShape();
+        _addNewShape();
+      }
       await Future.delayed(_duration);
       return !onPause;
     });
   }
 
-  void _gameOverCondition() {
-    if (_shapeState.block.location.any((p) => p.isNegative)) {
+  bool _gameOverCondition() {
+    if (currentLocation.any((p) => p.isNegative)) {
       onPause = true;
       emit(state.copyWith(isGameOver: true));
+      return true;
     }
+    return false;
   }
 
   void togglePause() {
@@ -79,11 +81,11 @@ class GameCubit extends Cubit<GameState> {
 
   void toRight() {
     if (onPause) return;
-    final possibleBlock = block.tryMoveRight(1);
+    final possibleBlock = currentBlock.tryMoveRight(1);
     if (_isCollision(possibleBlock.location)) {
       return;
     }
-    _shapeState.changeLocation(possibleBlock.location);
+    state.changeLocation(possibleBlock.location);
     _shapeToGlass();
   }
 
@@ -100,11 +102,11 @@ class GameCubit extends Cubit<GameState> {
 
   void toLeft() {
     if (onPause) return;
-    final possibleBlock = block.tryMoveLeft(1);
+    final possibleBlock = currentBlock.tryMoveLeft(1);
     if (_isCollision(possibleBlock.location)) {
       return;
     }
-    _shapeState.changeLocation(possibleBlock.location);
+    state.changeLocation(possibleBlock.location);
     _shapeToGlass();
   }
 
@@ -122,10 +124,10 @@ class GameCubit extends Cubit<GameState> {
 
   void twist() {
     if (onPause) return;
-    Block possibleBlock = block.tryTwist();
+    Block possibleBlock = currentBlock.tryTwist();
     final collisionPixels = _collisionPixels(possibleBlock.location);
     if (collisionPixels.isEmpty) {
-      _shapeState.changeLocation(possibleBlock.location);
+      state.changeLocation(possibleBlock.location);
       _shapeToGlass();
       return;
     }
@@ -135,16 +137,18 @@ class GameCubit extends Cubit<GameState> {
         : possibleBlock.tryMoveRight(collisionShift);
     final afterShiftCollisionPixels = _collisionPixels(afterShiftPossibleBlock.location);
     if (afterShiftCollisionPixels.isEmpty) {
-      _shapeState.changeLocation(afterShiftPossibleBlock.location);
+      state.changeLocation(afterShiftPossibleBlock.location);
       _shapeToGlass();
     }
   }
 
-  Block get block => _shapeState.block;
+  Block get currentBlock => state.shape.block;
 
-  List<int> get currentLocation => block.location;
+  List<int> get currentLocation => currentBlock.location;
 
-  List<int> get oldLocation => _shapeState.oldBlock.location;
+  Color get currentColor => state.shape.color;
+
+  List<int> get oldLocation => state.oldBlock.location;
 
   bool _isCollision(List<int> newLocation) => _collisionPixels(newLocation).isNotEmpty;
 
@@ -153,11 +157,11 @@ class GameCubit extends Cubit<GameState> {
   }
 
   bool _moveDown() {
-    final possibleBlock = block.tryMoveDown();
+    final possibleBlock = currentBlock.tryMoveDown();
     if (_isCollision(possibleBlock.location)) {
       return false;
     }
-    _shapeState.changeLocation(possibleBlock.location);
+    state.changeLocation(possibleBlock.location);
     _shapeToGlass();
     return true;
   }
@@ -195,8 +199,8 @@ class GameCubit extends Cubit<GameState> {
         lineCounter++;
       }
     });
-    _shapeState.changeLocation(_shapeState.block.tryMoveDown(lineCounter).location);
-    emit(GameState(glass: tempoMap));
+    state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
+    emit(state.copyWith(glass: tempoMap));
   }
 
   void _shapeToGlass([List<int> newLocation]) {
@@ -205,9 +209,17 @@ class GameCubit extends Cubit<GameState> {
       map[point] = Colors.black;
     }
     for (final point in newLocation ?? currentLocation) {
-      map[point] = _shapeState.color;
+      map[point] = state.shape.color;
     }
-    emit(GameState(glass: map));
+    emit(state.copyWith(glass: map));
+  }
+
+  void _addNewShape() {
+    Map<int, Color> map = state.glass;
+    for (final point in currentLocation) {
+      map[point] = state.shape.color;
+    }
+    emit(state.copyWith(glass: map));
   }
 
   Map<int, Color> _topCollapse(Map<int, Color> pixels, List<int> burningLine) {
