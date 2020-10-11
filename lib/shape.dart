@@ -25,7 +25,7 @@ class Shape {
     return Map.fromIterable(
       List.generate(16, (i) => i),
       key: (i) => i,
-      value: (i) => nextLocation.contains(i) ? color : Colors.black,
+      value: (i) => nextLocation.contains(i) ? color : Colors.grey[800],
     );
   }
 

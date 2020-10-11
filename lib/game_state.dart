@@ -41,11 +41,13 @@ class GameState {
     );
     var tempoLineIndex = 0;
     glass.entries.forEach((e) {
-      if (e.key >= 0 && e.key <= 251) {
-        glassMap[tempoLineIndex][e.key] = e.value;
-      }
-      if (e.key % 12 == 11) {
-        tempoLineIndex++;
+      if (e.key >= 0) {
+        if (e.key <= 251) {
+          glassMap[tempoLineIndex][e.key] = e.value;
+        }
+        if (e.key % 12 == 11) {
+          tempoLineIndex++;
+        }
       }
     });
     return glassMap;

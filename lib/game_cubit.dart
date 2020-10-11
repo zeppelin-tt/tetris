@@ -28,7 +28,7 @@ class GameCubit extends Cubit<GameState> {
 
   void clearGlass() {
     final Map<int, Color> glass = {};
-    for (int i = 0; i < 252; i++) {
+    for (int i = -48; i < 252; i++) {
       if (i % 12 == 0 || (i + 1) % 12 == 0 || i + 12 > 252) {
         glass[i] = Colors.white;
         continue;
