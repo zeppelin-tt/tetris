@@ -13,6 +13,7 @@ class GameCubit extends Cubit<GameState> {
   Duration _duration;
   bool onFastHorizontalMoving = false;
   bool onFastVerticalMoving = false;
+  int _initialLevel;
 
   GameCubit({
     @required int initialLevel,
@@ -23,15 +24,19 @@ class GameCubit extends Cubit<GameState> {
           nextShape: Shape.empty(),
           level: initialLevel,
         )) {
+    _initialLevel = initialLevel;
     _setDuration(initialLevel);
   }
 
-  void newGame() {
-    clearGlass();
+  void newGame([int initLevel]) {
+    _setDuration(initLevel ?? _initialLevel ?? 1);
+    clearGlass(changeLevel: initLevel);
     startGame();
   }
 
-  void clearGlass() {
+  void clearGlass({
+    int changeLevel,
+  }) {
     final Map<int, Color> glass = {};
     for (int i = -48; i < 252; i++) {
       if (i % 12 == 0 || (i + 1) % 12 == 0 || i + 12 > 252) {
@@ -40,7 +45,7 @@ class GameCubit extends Cubit<GameState> {
       }
       glass[i] = Colors.black;
     }
-    emit(state.copyWith(glass: glass, isGameOver: false, onPause: false, score: 0));
+    emit(state.copyWith(glass: glass, isGameOver: false, onPause: false, score: 0, level: changeLevel));
   }
 
   void startGame() {
@@ -80,8 +85,6 @@ class GameCubit extends Cubit<GameState> {
     }
     emit(state.copyWith(onPause: true));
   }
-
-  void setDuration(Duration duration) => this._duration = duration;
 
   void toRight() {
     if (state.onPause) return;
@@ -205,8 +208,6 @@ class GameCubit extends Cubit<GameState> {
       state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
       final score = state.score + getScore(lineCounter);
       final level = (score / scoresInLevel).floor() + 1;
-      print('level: $level');
-      print('state.leve: ${state.level}');
       if (level != state.level) {
         _setDuration(level);
       }
@@ -266,7 +267,7 @@ class GameCubit extends Cubit<GameState> {
 
   Duration _getDuration(int level) {
     var mills = 700;
-    for (var i = 1; i != level; i ++) {
+    for (var i = 1; i != level; i++) {
       mills = (mills * .85).floor();
     }
     return Duration(milliseconds: mills);

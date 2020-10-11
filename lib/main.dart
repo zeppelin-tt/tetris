@@ -303,7 +303,7 @@ void gameOverDialog(BuildContext appContext, int score) {
             child: Text('Yes please!'),
             onPressed: () {
               Navigator.of(context).pop();
-              appContext.bloc<GameCubit>().newGame();
+              appContext.bloc<GameCubit>().newGame(1);
             },
           ),
           TextButton(
