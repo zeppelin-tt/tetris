@@ -11,6 +11,7 @@ class GameState {
   Shape nextShape;
   Block oldBlock;
   bool onPause;
+  int score;
 
   GameState({
     this.glass,
@@ -19,6 +20,7 @@ class GameState {
     this.oldBlock,
     this.isGameOver = false,
     this.onPause = false,
+    this.score = 0,
   });
 
   List<int> get occupiedPixels {
@@ -62,6 +64,7 @@ class GameState {
     Shape nextShape,
     Block oldBlock,
     bool onPause,
+    int score,
   }) {
     return GameState(
       glass: glass ?? this.glass,
@@ -70,6 +73,7 @@ class GameState {
       nextShape: nextShape ?? this.nextShape,
       oldBlock: oldBlock ?? this.oldBlock,
       onPause: onPause ?? this.onPause,
+      score: score ?? this.score,
     );
   }
 

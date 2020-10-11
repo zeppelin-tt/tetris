@@ -44,7 +44,7 @@ class GamePage extends StatelessWidget {
             child: BlocConsumer<GameCubit, GameState>(
               listener: (BuildContext context, state) {
                 if (state.isGameOver) {
-                  gameOverDialog(context);
+                  gameOverDialog(context, state.score);
                 }
               },
               builder: (context, game) {
@@ -95,7 +95,7 @@ class GamePage extends StatelessWidget {
                               width: rectSize * 10.28,
                               height: glassHeight - rectSize * .86,
                               decoration: BoxDecoration(
-                                color: game.onPause ? Colors.black.withOpacity(.8) : Colors.transparent,
+                                color: game.onPause && !game.isGameOver ? Colors.black.withOpacity(.8) : Colors.transparent,
                                 border: Border(
                                   left: BorderSide(color: Colors.yellow, width: 2.0),
                                   right: BorderSide(color: Colors.yellow, width: 2.0),
@@ -104,7 +104,7 @@ class GamePage extends StatelessWidget {
                               ),
                               child: Center(
                                 child: AnimatedDefaultTextStyle(
-                                  style: game.onPause
+                                  style: game.onPause && !game.isGameOver
                                       ? TextStyle(color: Colors.yellow, fontSize: 56.0)
                                       : TextStyle(color: Colors.transparent, fontSize: 4.0),
                                   duration: Duration(milliseconds: 500),
@@ -115,6 +115,10 @@ class GamePage extends StatelessWidget {
                             Column(
                               children: [
                                 SizedBox(height: (sideWidth - (sideWidth * .75)) / 2),
+                                Text('Score', style: TextStyle(color: Colors.yellow)),
+                                SizedBox(height: (sideWidth - (sideWidth * .75)) / 2),
+                                Text(game.score.toString(), style: TextStyle(color: Colors.yellow)),
+                                SizedBox(height: sideWidth / 2),
                                 Text('Next', style: TextStyle(color: Colors.yellow)),
                                 SizedBox(
                                   width: sideWidth,
@@ -272,7 +276,7 @@ class GamePage extends StatelessWidget {
   }
 }
 
-void gameOverDialog(BuildContext appContext) {
+void gameOverDialog(BuildContext appContext, int score) {
   showDialog<void>(
     context: appContext,
     barrierDismissible: false,
@@ -280,7 +284,12 @@ void gameOverDialog(BuildContext appContext) {
       return AlertDialog(
         title: Text('Game Over'),
         content: SingleChildScrollView(
-          child: Text('Would you like to play again?'),
+          child: ListBody(
+            children: <Widget>[
+              Text('You scored $score points'),
+              Text('Would you like to play again?'),
+            ],
+          ),
         ),
         actions: <Widget>[
           TextButton(

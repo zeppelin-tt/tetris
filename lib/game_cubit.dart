@@ -11,7 +11,8 @@ import 'randomizer.dart';
 
 class GameCubit extends Cubit<GameState> {
   Duration _duration;
-  bool onFastMoving = false;
+  bool onFastHorizontalMoving = false;
+  bool onFastVerticalMoving = false;
 
   GameCubit({
     @required Duration initialDuration,
@@ -45,7 +46,7 @@ class GameCubit extends Cubit<GameState> {
     Future.doWhile(() async {
       if (_moveDown()) {
         await Future.delayed(_duration);
-        return !state.onPause;
+        return !state.onPause && !onFastVerticalMoving;
       }
       _burningLines();
       if (!_gameOverCondition()) {
@@ -53,7 +54,7 @@ class GameCubit extends Cubit<GameState> {
         _addNewShape();
       }
       await Future.delayed(_duration);
-      return !state.onPause;
+      return !state.onPause && !onFastVerticalMoving;
     });
   }
 
@@ -87,15 +88,15 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void toRightFast() {
-    onFastMoving = true;
+    onFastHorizontalMoving = true;
     Future.doWhile(() async {
       toRight();
       await Future.delayed(const Duration(milliseconds: 100));
-      return onFastMoving;
+      return onFastHorizontalMoving;
     });
   }
 
-  void stopRightMove() => onFastMoving = false;
+  void stopRightMove() => onFastHorizontalMoving = false;
 
   void toLeft() {
     if (state.onPause) return;
@@ -108,16 +109,15 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void toLeftFast() {
-    onFastMoving = true;
+    onFastHorizontalMoving = true;
     Future.doWhile(() async {
       toLeft();
       await Future.delayed(const Duration(milliseconds: 100));
-      return onFastMoving;
+      return onFastHorizontalMoving;
     });
   }
 
-  void stopLeftMove() => onFastMoving = false;
-
+  void stopLeftMove() => onFastHorizontalMoving = false;
 
   void twist() {
     if (state.onPause) return;
@@ -169,21 +169,20 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void toDownFast() {
-    emit(state.copyWith(onPause: true));
-    onFastMoving = true;
+    onFastVerticalMoving = true;
     Future.doWhile(() async {
       if (_moveDown()) {
         await Future.delayed(const Duration(milliseconds: 60));
-        return onFastMoving;
+        return onFastVerticalMoving;
       }
-      onFastMoving = false;
+      onFastVerticalMoving = false;
       emit(state.copyWith(onPause: false));
       startGame();
       return false;
     });
   }
 
-  void stopDownMove() => onFastMoving = false;
+  void stopDownMove() => onFastHorizontalMoving = false;
 
   void _burningLines() {
     final glassLines = state.glassLines;
@@ -196,8 +195,31 @@ class GameCubit extends Cubit<GameState> {
         lineCounter++;
       }
     });
-    state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
-    emit(state.copyWith(glass: tempoMap));
+    if (lineCounter != 0) {
+      state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
+      emit(state.copyWith(glass: tempoMap, score: state.score += getScore(lineCounter)));
+    }
+  }
+
+  int getScore(int linesCount) {
+    var score;
+    switch (linesCount) {
+      case 1:
+        score = 100;
+        break;
+      case 2:
+        score = 300;
+        break;
+      case 3:
+        score = 700;
+        break;
+      case 4:
+        score = 1500;
+        break;
+      default:
+        score = 0;
+    }
+    return score;
   }
 
   void _shapeToGlass([List<int> newLocation]) {
