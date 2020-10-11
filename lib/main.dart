@@ -90,15 +90,25 @@ class GamePage extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(width: sideWidth),
-                            Container(
+                            AnimatedContainer(
+                              duration: Duration(milliseconds: 500),
                               width: rectSize * 10.28,
                               height: glassHeight - rectSize * .86,
                               decoration: BoxDecoration(
-                                color: Colors.transparent,
+                                color: game.onPause ? Colors.black.withOpacity(.8) : Colors.transparent,
                                 border: Border(
                                   left: BorderSide(color: Colors.yellow, width: 2.0),
                                   right: BorderSide(color: Colors.yellow, width: 2.0),
                                   bottom: BorderSide(color: Colors.yellow, width: 2.0),
+                                ),
+                              ),
+                              child: Center(
+                                child: AnimatedDefaultTextStyle(
+                                  style: game.onPause
+                                      ? TextStyle(color: Colors.yellow, fontSize: 56.0)
+                                      : TextStyle(color: Colors.transparent, fontSize: 4.0),
+                                  duration: Duration(milliseconds: 500),
+                                  child: Text('Pause'),
                                 ),
                               ),
                             ),
@@ -217,7 +227,11 @@ class GamePage extends StatelessWidget {
                                             width: buttonSize * 0.35,
                                             color: Colors.blue,
                                             child: Center(
-                                              child: Icon(Icons.pause, color: Colors.black, size: width * .03),
+                                              child: Icon(
+                                                game.onPause ? Icons.play_arrow : Icons.pause,
+                                                color: Colors.black,
+                                                size: width * .04,
+                                              ),
                                             ),
                                           ),
                                         ),
