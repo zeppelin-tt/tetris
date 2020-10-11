@@ -14,6 +14,7 @@ class GameCubit extends Cubit<GameState> {
   bool onFastHorizontalMoving = false;
   bool onFastVerticalMoving = false;
   int _initialLevel;
+  Timer _timer;
 
   GameCubit({
     @required int initialLevel,
@@ -48,24 +49,28 @@ class GameCubit extends Cubit<GameState> {
     emit(state.copyWith(glass: glass, isGameOver: false, onPause: false, score: 0, level: changeLevel));
   }
 
-  void startGame() {
+  void startGame([Duration duration]) {
     if (state.shape.isEmpty) {
       state.shape = Randomizer.shape;
       state.nextShape = Randomizer.shape;
       _shapeToGlass();
     }
-    Future.doWhile(() async {
+    _timer = Timer.periodic(duration ?? _duration, (timer) async {
+      if (state.onPause) {
+        _timer.cancel();
+        return;
+      }
       if (_moveDown()) {
-        await Future.delayed(_duration);
-        return !state.onPause && !onFastVerticalMoving;
+        return;
       }
       _burningLines();
       if (!_gameOverCondition()) {
         state.onNextShape();
         _addNewShape();
       }
-      await Future.delayed(_duration);
-      return !state.onPause && !onFastVerticalMoving;
+      if (onFastVerticalMoving) {
+        stopDownFastMove();
+      }
     });
   }
 
@@ -179,19 +184,15 @@ class GameCubit extends Cubit<GameState> {
 
   void toDownFast() {
     onFastVerticalMoving = true;
-    Future.doWhile(() async {
-      if (_moveDown()) {
-        await Future.delayed(const Duration(milliseconds: 40));
-        return onFastVerticalMoving;
-      }
-      onFastVerticalMoving = false;
-      emit(state.copyWith(onPause: false));
-      startGame();
-      return false;
-    });
+    _timer.cancel();
+    startGame(const Duration(milliseconds: 30));
   }
 
-  void stopDownMove() => onFastHorizontalMoving = false;
+  void stopDownFastMove() {
+    onFastVerticalMoving = false;
+    _timer.cancel();
+    startGame();
+  }
 
   void _burningLines() {
     final glassLines = state.glassLines;

@@ -45,6 +45,7 @@ class GamePage extends StatelessWidget {
             child: BlocConsumer<GameCubit, GameState>(
               listener: (BuildContext context, state) {
                 if (state.isGameOver) {
+                  HapticFeedback.heavyImpact();
                   gameOverDialog(context, state.score);
                 }
               },
@@ -204,7 +205,7 @@ class GamePage extends StatelessWidget {
                                     iconSize: width * .06,
                                     onTap: () => context.bloc<GameCubit>().moveDown(),
                                     onLongPressStart: (_) => context.bloc<GameCubit>().toDownFast(),
-                                    onLongPressEnd: (_) => context.bloc<GameCubit>().stopDownMove(),
+                                    onLongPressEnd: (_) => context.bloc<GameCubit>().stopDownFastMove(),
                                   ),
                                 ),
                               ],
