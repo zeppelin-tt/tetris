@@ -15,9 +15,15 @@ class GameCubit extends Cubit<GameState> {
   bool onFastVerticalMoving = false;
 
   GameCubit({
-    @required Duration initialDuration,
-  }) : super(GameState(glass: {}, oldBlock: Block([]), shape: Shape.empty(), nextShape: Shape.empty())) {
-    _duration = initialDuration;
+    @required int initialLevel,
+  }) : super(GameState(
+          glass: {},
+          oldBlock: Block([]),
+          shape: Shape.empty(),
+          nextShape: Shape.empty(),
+          level: initialLevel,
+        )) {
+    _setDuration(initialLevel);
   }
 
   void newGame() {
@@ -34,7 +40,7 @@ class GameCubit extends Cubit<GameState> {
       }
       glass[i] = Colors.black;
     }
-    emit(state.copyWith(glass: glass, isGameOver: false, onPause: false));
+    emit(state.copyWith(glass: glass, isGameOver: false, onPause: false, score: 0));
   }
 
   void startGame() {
@@ -91,7 +97,7 @@ class GameCubit extends Cubit<GameState> {
     onFastHorizontalMoving = true;
     Future.doWhile(() async {
       toRight();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 50));
       return onFastHorizontalMoving;
     });
   }
@@ -112,7 +118,7 @@ class GameCubit extends Cubit<GameState> {
     onFastHorizontalMoving = true;
     Future.doWhile(() async {
       toLeft();
-      await Future.delayed(const Duration(milliseconds: 100));
+      await Future.delayed(const Duration(milliseconds: 50));
       return onFastHorizontalMoving;
     });
   }
@@ -172,7 +178,7 @@ class GameCubit extends Cubit<GameState> {
     onFastVerticalMoving = true;
     Future.doWhile(() async {
       if (_moveDown()) {
-        await Future.delayed(const Duration(milliseconds: 60));
+        await Future.delayed(const Duration(milliseconds: 40));
         return onFastVerticalMoving;
       }
       onFastVerticalMoving = false;
@@ -197,7 +203,14 @@ class GameCubit extends Cubit<GameState> {
     });
     if (lineCounter != 0) {
       state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
-      emit(state.copyWith(glass: tempoMap, score: state.score += getScore(lineCounter)));
+      final score = state.score + getScore(lineCounter);
+      final level = (score / scoresInLevel).floor() + 1;
+      print('level: $level');
+      print('state.leve: ${state.level}');
+      if (level != state.level) {
+        _setDuration(level);
+      }
+      emit(state.copyWith(glass: tempoMap, score: score, level: level));
     }
   }
 
@@ -250,4 +263,14 @@ class GameCubit extends Cubit<GameState> {
     }
     return map..addAll(pixels.map((key, value) => MapEntry(key + 12, value)));
   }
+
+  Duration _getDuration(int level) {
+    var mills = 700;
+    for (var i = 1; i != level; i ++) {
+      mills = (mills * .85).floor();
+    }
+    return Duration(milliseconds: mills);
+  }
+
+  void _setDuration([int level]) => _duration = _getDuration(level ?? state.level);
 }

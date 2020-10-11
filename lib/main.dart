@@ -38,7 +38,7 @@ class GamePage extends StatelessWidget {
           // print(rectSize);
           return BlocProvider<GameCubit>(
             lazy: false,
-            create: (context) => GameCubit(initialDuration: Duration(milliseconds: 400))
+            create: (context) => GameCubit(initialLevel: 1)
               ..clearGlass()
               ..startGame(),
             child: BlocConsumer<GameCubit, GameState>(
@@ -118,6 +118,10 @@ class GamePage extends StatelessWidget {
                                 Text('Score', style: TextStyle(color: Colors.yellow)),
                                 SizedBox(height: (sideWidth - (sideWidth * .75)) / 2),
                                 Text(game.score.toString(), style: TextStyle(color: Colors.yellow)),
+                                SizedBox(height: sideWidth / 2),
+                                Text('Level', style: TextStyle(color: Colors.yellow)),
+                                SizedBox(height: (sideWidth - (sideWidth * .75)) / 2),
+                                Text(game.level.toString(), style: TextStyle(color: Colors.yellow)),
                                 SizedBox(height: sideWidth / 2),
                                 Text('Next', style: TextStyle(color: Colors.yellow)),
                                 SizedBox(
@@ -227,14 +231,14 @@ class GamePage extends StatelessWidget {
                                         onTap: () => context.bloc<GameCubit>().togglePause(),
                                         child: ClipOval(
                                           child: Container(
-                                            height: buttonSize * 0.35,
-                                            width: buttonSize * 0.35,
+                                            height: buttonSize * 0.45,
+                                            width: buttonSize * 0.45,
                                             color: Colors.blue,
                                             child: Center(
                                               child: Icon(
                                                 game.onPause ? Icons.play_arrow : Icons.pause,
                                                 color: Colors.black,
-                                                size: width * .04,
+                                                size: width * .06,
                                               ),
                                             ),
                                           ),
@@ -245,15 +249,18 @@ class GamePage extends StatelessWidget {
                                 ),
                                 Align(
                                   alignment: Alignment.centerRight,
-                                  child: ClipOval(
-                                    child: Container(
-                                      height: buttonSize * 1.55,
-                                      width: buttonSize * 1.55,
-                                      color: Colors.yellow,
-                                      child: FlatButton(
+                                  child: Padding(
+                                    padding: EdgeInsets.only(top: buttonSize * .15),
+                                    child: ClipOval(
+                                      child: Container(
+                                        height: buttonSize * 1.55,
+                                        width: buttonSize * 1.55,
                                         color: Colors.yellow,
-                                        onPressed: () => context.bloc<GameCubit>().twist(),
-                                        child: Icon(Icons.autorenew, color: Colors.black),
+                                        child: FlatButton(
+                                          color: Colors.yellow,
+                                          onPressed: () => context.bloc<GameCubit>().twist(),
+                                          child: Icon(Icons.autorenew, color: Colors.black),
+                                        ),
                                       ),
                                     ),
                                   ),

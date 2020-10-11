@@ -12,6 +12,7 @@ class GameState {
   Block oldBlock;
   bool onPause;
   int score;
+  int level;
 
   GameState({
     this.glass,
@@ -21,6 +22,7 @@ class GameState {
     this.isGameOver = false,
     this.onPause = false,
     this.score = 0,
+    this.level,
   });
 
   List<int> get occupiedPixels {
@@ -65,6 +67,7 @@ class GameState {
     Block oldBlock,
     bool onPause,
     int score,
+    int level,
   }) {
     return GameState(
       glass: glass ?? this.glass,
@@ -74,11 +77,7 @@ class GameState {
       oldBlock: oldBlock ?? this.oldBlock,
       onPause: onPause ?? this.onPause,
       score: score ?? this.score,
+      level: level ?? this.level,
     );
-  }
-
-  @override
-  String toString() {
-    return 'GameState{glass: $glass}';
   }
 }
