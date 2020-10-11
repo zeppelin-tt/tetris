@@ -11,7 +11,6 @@ import 'randomizer.dart';
 
 class GameCubit extends Cubit<GameState> {
   Duration _duration;
-  bool onPause = false;
   bool onFastMoving = false;
 
   GameCubit({
@@ -21,7 +20,6 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void newGame() {
-    onPause = false;
     clearGlass();
     startGame();
   }
@@ -35,7 +33,7 @@ class GameCubit extends Cubit<GameState> {
       }
       glass[i] = Colors.black;
     }
-    emit(state.copyWith(glass: glass, isGameOver: false));
+    emit(state.copyWith(glass: glass, isGameOver: false, onPause: false));
   }
 
   void startGame() {
@@ -47,7 +45,7 @@ class GameCubit extends Cubit<GameState> {
     Future.doWhile(() async {
       if (_moveDown()) {
         await Future.delayed(_duration);
-        return !onPause;
+        return !state.onPause;
       }
       _burningLines();
       if (!_gameOverCondition()) {
@@ -55,32 +53,31 @@ class GameCubit extends Cubit<GameState> {
         _addNewShape();
       }
       await Future.delayed(_duration);
-      return !onPause;
+      return !state.onPause;
     });
   }
 
   bool _gameOverCondition() {
     if (currentLocation.any((p) => p.isNegative)) {
-      onPause = true;
-      emit(state.copyWith(isGameOver: true));
+      emit(state.copyWith(isGameOver: true, onPause: true));
       return true;
     }
     return false;
   }
 
   void togglePause() {
-    if (onPause) {
-      onPause = false;
+    if (state.onPause) {
+      emit(state.copyWith(onPause: false));
       startGame();
       return;
     }
-    onPause = true;
+    emit(state.copyWith(onPause: true));
   }
 
   void setDuration(Duration duration) => this._duration = duration;
 
   void toRight() {
-    if (onPause) return;
+    if (state.onPause) return;
     final possibleBlock = currentBlock.tryMoveRight(1);
     if (_isCollision(possibleBlock.location)) {
       return;
@@ -101,7 +98,7 @@ class GameCubit extends Cubit<GameState> {
   void stopRightMove() => onFastMoving = false;
 
   void toLeft() {
-    if (onPause) return;
+    if (state.onPause) return;
     final possibleBlock = currentBlock.tryMoveLeft(1);
     if (_isCollision(possibleBlock.location)) {
       return;
@@ -123,7 +120,7 @@ class GameCubit extends Cubit<GameState> {
 
 
   void twist() {
-    if (onPause) return;
+    if (state.onPause) return;
     Block possibleBlock = currentBlock.tryTwist();
     final collisionPixels = _collisionPixels(possibleBlock.location);
     if (collisionPixels.isEmpty) {
@@ -167,12 +164,12 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void moveDown() {
-    if (onPause) return;
+    if (state.onPause) return;
     _moveDown();
   }
 
   void toDownFast() {
-    onPause = true;
+    emit(state.copyWith(onPause: true));
     onFastMoving = true;
     Future.doWhile(() async {
       if (_moveDown()) {
@@ -180,7 +177,7 @@ class GameCubit extends Cubit<GameState> {
         return onFastMoving;
       }
       onFastMoving = false;
-      onPause = false;
+      emit(state.copyWith(onPause: false));
       startGame();
       return false;
     });
