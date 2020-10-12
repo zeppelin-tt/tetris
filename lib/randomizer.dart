@@ -4,18 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:tetris/shape.dart';
 
 import 'blocks.dart';
+import 'constants.dart';
 
 class Randomizer {
   static final _rnd = Random();
-
-  static const colorList = [
-    Colors.red,
-    Colors.orange,
-    Colors.green,
-    Colors.yellow,
-    Colors.indigo,
-    Colors.blue,
-  ];
 
   static Shape get shape {
     Block block;
@@ -46,7 +38,13 @@ class Randomizer {
     return Shape(block: block, color: color);
   }
 
-  static Color get color => colorList[_rnd.nextInt(colorList.length)];
+  static String get levelUpgradeSound {
+    return Constants.levelUpgradeSounds[_rnd.nextInt(Constants.levelUpgradeSounds.length)];
+  }
+
+  static String get layoutSound => Constants.layoutSounds[_rnd.nextInt(Constants.layoutSounds.length)];
+
+  static Color get color => Constants.colorList[_rnd.nextInt(Constants.colorList.length)];
 }
 
 enum Blocks { smashboy, orange_ricky, blue_ricky, rhode_island, cleveland, hero_block, teewee }

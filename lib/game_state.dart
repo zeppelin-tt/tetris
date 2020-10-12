@@ -11,6 +11,7 @@ class GameState {
   Shape nextShape;
   Block oldBlock;
   bool onPause;
+  bool soundOn;
   int score;
   int level;
 
@@ -21,6 +22,7 @@ class GameState {
     this.oldBlock,
     this.isGameOver = false,
     this.onPause = false,
+    this.soundOn = false,
     this.score = 0,
     this.level,
   });
@@ -66,6 +68,7 @@ class GameState {
     Shape nextShape,
     Block oldBlock,
     bool onPause,
+    bool soundOn,
     int score,
     int level,
   }) {
@@ -76,6 +79,7 @@ class GameState {
       nextShape: nextShape ?? this.nextShape,
       oldBlock: oldBlock ?? this.oldBlock,
       onPause: onPause ?? this.onPause,
+      soundOn: soundOn ?? this.soundOn,
       score: score ?? this.score,
       level: level ?? this.level,
     );

@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tetris/blocks.dart';
@@ -15,6 +16,9 @@ class GameCubit extends Cubit<GameState> {
   bool onFastVerticalMoving = false;
   int _initialLevel;
   Timer _timer;
+  Timer _horizontalMoveTimer;
+
+  AssetsAudioPlayer _player;
 
   GameCubit({
     @required int initialLevel,
@@ -27,6 +31,7 @@ class GameCubit extends Cubit<GameState> {
         )) {
     _initialLevel = initialLevel;
     _setDuration(initialLevel);
+    _player = AssetsAudioPlayer.newPlayer();
   }
 
   void newGame([int initLevel]) {
@@ -56,14 +61,12 @@ class GameCubit extends Cubit<GameState> {
       _shapeToGlass();
     }
     _timer = Timer.periodic(duration ?? _duration, (timer) async {
-      if (state.onPause) {
-        _timer.cancel();
-        return;
-      }
       if (_moveDown()) {
         return;
       }
-      _burningLines();
+      final landingResult = _burningActions();
+      print(landingResult);
+      _landingSound(landingResult);
       if (!_gameOverCondition()) {
         state.onNextShape();
         _addNewShape();
@@ -76,6 +79,10 @@ class GameCubit extends Cubit<GameState> {
 
   bool _gameOverCondition() {
     if (currentLocation.any((p) => p.isNegative)) {
+      _timer.cancel();
+      if (state.soundOn) {
+        _player.open(Audio('assets/sounds/game_over.wav'), autoStart: true);
+      }
       emit(state.copyWith(isGameOver: true, onPause: true));
       return true;
     }
@@ -88,12 +95,20 @@ class GameCubit extends Cubit<GameState> {
       startGame();
       return;
     }
+    _timer.cancel();
     emit(state.copyWith(onPause: true));
   }
 
-  void toRight() {
-    if (state.onPause) return;
-    final possibleBlock = currentBlock.tryMoveRight(1);
+  void horizontalMove(GlassSide side) {
+    var possibleBlock;
+    switch (side) {
+      case GlassSide.right:
+        possibleBlock = currentBlock.tryMoveRight(1);
+        break;
+      case GlassSide.left:
+        possibleBlock = currentBlock.tryMoveLeft(1);
+        break;
+    }
     if (_isCollision(possibleBlock.location)) {
       return;
     }
@@ -101,37 +116,17 @@ class GameCubit extends Cubit<GameState> {
     _shapeToGlass();
   }
 
-  void toRightFast() {
-    onFastHorizontalMoving = true;
-    Future.doWhile(() async {
-      toRight();
-      await Future.delayed(const Duration(milliseconds: 50));
-      return onFastHorizontalMoving;
+  void horizontalMoveFast(GlassSide side) {
+    _horizontalMoveTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
+      horizontalMove(side);
     });
   }
 
-  void stopRightMove() => onFastHorizontalMoving = false;
-
-  void toLeft() {
-    if (state.onPause) return;
-    final possibleBlock = currentBlock.tryMoveLeft(1);
-    if (_isCollision(possibleBlock.location)) {
-      return;
+  void stopHorizontalMove() {
+    if(_horizontalMoveTimer != null && _horizontalMoveTimer.isActive) {
+      _horizontalMoveTimer.cancel();
     }
-    state.changeLocation(possibleBlock.location);
-    _shapeToGlass();
   }
-
-  void toLeftFast() {
-    onFastHorizontalMoving = true;
-    Future.doWhile(() async {
-      toLeft();
-      await Future.delayed(const Duration(milliseconds: 50));
-      return onFastHorizontalMoving;
-    });
-  }
-
-  void stopLeftMove() => onFastHorizontalMoving = false;
 
   void twist() {
     if (state.onPause) return;
@@ -194,7 +189,7 @@ class GameCubit extends Cubit<GameState> {
     startGame();
   }
 
-  void _burningLines() {
+  ResultShapeLanding _burningActions() {
     final glassLines = state.glassLines;
     Map<int, Color> tempoMap = {};
     var lineCounter = 0;
@@ -205,36 +200,31 @@ class GameCubit extends Cubit<GameState> {
         lineCounter++;
       }
     });
+    ResultShapeLanding result = ResultShapeLanding(linesBurned: lineCounter);
     if (lineCounter != 0) {
       state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
-      final score = state.score + getScore(lineCounter);
-      final level = (score / scoresInLevel).floor() + 1;
+      final score = state.score +  Constants.scores[lineCounter];
+      final level = (score /  Constants.scoresInLevel).floor() + 1;
       if (level != state.level) {
+        result.levelUpgrade = true;
         _setDuration(level);
       }
       emit(state.copyWith(glass: tempoMap, score: score, level: level));
     }
+    return result;
   }
 
-  int getScore(int linesCount) {
-    var score;
-    switch (linesCount) {
-      case 1:
-        score = 100;
-        break;
-      case 2:
-        score = 300;
-        break;
-      case 3:
-        score = 700;
-        break;
-      case 4:
-        score = 1500;
-        break;
-      default:
-        score = 0;
+  void _landingSound(ResultShapeLanding result) async {
+    if (!state.soundOn) {
+      return;
     }
-    return score;
+    // await _player.open(Audio('assets/sounds/${Randomizer.layoutSound}'), autoStart: true);
+    if (result.linesBurned != 0) {
+      await _player.open(Audio('assets/sounds/${Constants.burningSounds[result.linesBurned]}'), autoStart: true);
+    }
+    if (result.levelUpgrade) {
+      _player.open(Audio('assets/sounds/${Randomizer.levelUpgradeSound}'), autoStart: true);
+    }
   }
 
   void _shapeToGlass([List<int> newLocation]) {
@@ -259,7 +249,7 @@ class GameCubit extends Cubit<GameState> {
   Map<int, Color> _topCollapse(Map<int, Color> pixels, List<int> burningLine) {
     Map<int, Color> map = Map.of(state.glass);
     for (final point in burningLine..addAll(pixels.keys)) {
-      if (glassSides.every((i) => i != point)) {
+      if ( Constants.glassSides.every((i) => i != point)) {
         map[point] = Colors.black;
       }
     }
@@ -267,12 +257,31 @@ class GameCubit extends Cubit<GameState> {
   }
 
   Duration _getDuration(int level) {
-    var mills = firstLevelDurationMills;
+    var mills = Constants.firstLevelDurationMills;
     for (var i = 1; i != level; i++) {
-      mills = (mills * .85).floor();
+      mills = (mills * .87).floor();
     }
     return Duration(milliseconds: mills);
   }
 
   void _setDuration([int level]) => _duration = _getDuration(level ?? state.level);
+
+  void toggleSound() => emit(state.copyWith(soundOn: !state.soundOn));
 }
+
+class ResultShapeLanding {
+  int linesBurned;
+  bool levelUpgrade;
+
+  ResultShapeLanding({
+    @required this.linesBurned,
+    this.levelUpgrade = false,
+  });
+
+  @override
+  String toString() {
+    return 'ResultShapeLanding{linesBurned: $linesBurned, levelUpgrade: $levelUpgrade}';
+  }
+}
+
+enum GlassSide { right, left }
