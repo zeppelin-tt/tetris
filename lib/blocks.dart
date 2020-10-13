@@ -1,9 +1,10 @@
-import 'package:tetris/randomizer.dart';
+import 'package:flutter/material.dart';
 
 class Block {
   List<int> location;
+  Color color;
 
-  Block(this.location);
+  Block(this.location, this.color);
 
   Block tryTwist() => copyWith(location: location);
 
@@ -18,12 +19,25 @@ class Block {
   Block copyWith({
     List<int> location,
   }) {
-    return Block(location ?? this.location);
+    return Block(location ?? this.location, color ?? this.color);
   }
 
   @override
   String toString() {
     return 'Block{location: $location}';
+  }
+
+  bool get isEmpty => location.isEmpty;
+
+  bool get isNotEmpty => location.isNotEmpty;
+
+  Map<int, Color> get nextLocationView {
+    final nextLocation = location.map((p) => p + 44).map((p) => p - (p / 12).floor() * 8).toList();
+    return Map.fromIterable(
+      List.generate(16, (i) => i),
+      key: (i) => i,
+      value: (i) => nextLocation.contains(i) ? color : Colors.grey[800],
+    );
   }
 
   int collisionShift(List<int> collisionPixels) {
@@ -78,7 +92,7 @@ class Block {
 }
 
 class EmptyBlock extends Block {
-  EmptyBlock() : super([]);
+  EmptyBlock() : super([], Colors.black);
 
   @override
   EmptyBlock copyWith({
@@ -89,7 +103,8 @@ class EmptyBlock extends Block {
 }
 
 class HeroBlock extends Block {
-  HeroBlock(List<int> locations) : super(locations);
+
+  HeroBlock(List<int> locations) : super(locations, Colors.yellow);
 
   static const initStates = [
     [-8, -7, -6, -5],
@@ -114,7 +129,7 @@ class HeroBlock extends Block {
 }
 
 class Smashboy extends Block {
-  Smashboy(List<int> locations) : super(locations);
+  Smashboy(List<int> locations) : super(locations, Colors.blue);
 
   static const initStates = [
     [-19, -18, -7, -6],
@@ -129,7 +144,7 @@ class Smashboy extends Block {
 }
 
 class Teewee extends Block {
-  Teewee(List<int> locations) : super(locations);
+  Teewee(List<int> locations) : super(locations, Colors.red);
 
   static const initStates = [
     [-8, -7, -6, -19],
@@ -161,7 +176,7 @@ class Teewee extends Block {
 }
 
 class RhodeIsland extends Block {
-  RhodeIsland(List<int> locations) : super(locations);
+  RhodeIsland(List<int> locations) : super(locations, Colors.green);
 
   static const initStates = [
     [-8, -7, -19, -18],
@@ -187,7 +202,7 @@ class RhodeIsland extends Block {
 }
 
 class Cleveland extends Block {
-  Cleveland(List<int> locations) : super(locations);
+  Cleveland(List<int> locations) : super(locations, Colors.indigo);
 
   static const initStates = [
     [-6, -7, -19, -20],
@@ -213,7 +228,7 @@ class Cleveland extends Block {
 }
 
 class OrangeRicky extends Block {
-  OrangeRicky(List<int> locations) : super(locations);
+  OrangeRicky(List<int> locations) : super(locations, Colors.orange);
 
   static const initStates = [
     [-31, -19, -7, -6],
@@ -245,7 +260,7 @@ class OrangeRicky extends Block {
 }
 
 class BlueRicky extends Block {
-  BlueRicky(List<int> locations) : super(locations);
+  BlueRicky(List<int> locations) : super(locations, Colors.pink);
 
   static const initStates = [
     [-7, -6, -18, -30],

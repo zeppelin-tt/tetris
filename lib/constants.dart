@@ -5,7 +5,7 @@ class Constants {
 
   static const glassSides = [0, 11];
 
-  static const scoresInLevel = 200;
+  static const scoresInLevel = 2000;
 
   static const firstLevelDurationMills = 800;
 

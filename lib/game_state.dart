@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:tetris/randomizer.dart';
-import 'package:tetris/shape.dart';
 
 import 'blocks.dart';
 
 class GameState {
   Map<int, Color> glass;
   bool isGameOver;
-  Shape shape;
-  Shape nextShape;
+  Block currentBlock;
+  Block nextBlock;
   Block oldBlock;
   bool onPause;
   bool soundOn;
@@ -17,8 +16,8 @@ class GameState {
 
   GameState({
     this.glass,
-    this.shape,
-    this.nextShape,
+    this.currentBlock,
+    this.nextBlock,
     this.oldBlock,
     this.isGameOver = false,
     this.onPause = false,
@@ -32,13 +31,13 @@ class GameState {
   }
 
   void changeLocation(List<int> newLocation) {
-    oldBlock.location = List.of(shape.block.location);
-    shape.block.changeLocation(newLocation);
+    oldBlock.location = List.of(currentBlock.location);
+    currentBlock.changeLocation(newLocation);
   }
 
-  void onNextShape() {
-    shape = nextShape.copyWith();
-    nextShape = Randomizer.shape;
+  void onNextBlock(Block block) {
+    currentBlock = nextBlock.copyWith();
+    nextBlock = block;
   }
 
   Map<int, Map<int, Color>> get glassLines {
@@ -64,8 +63,8 @@ class GameState {
   GameState copyWith({
     Map<int, Color> glass,
     bool isGameOver,
-    Shape shape,
-    Shape nextShape,
+    Block currentBlock,
+    Block nextBlock,
     Block oldBlock,
     bool onPause,
     bool soundOn,
@@ -75,8 +74,8 @@ class GameState {
     return GameState(
       glass: glass ?? this.glass,
       isGameOver: isGameOver ?? this.isGameOver,
-      shape: shape ?? this.shape,
-      nextShape: nextShape ?? this.nextShape,
+      currentBlock: currentBlock ?? this.currentBlock,
+      nextBlock: nextBlock ?? this.nextBlock,
       oldBlock: oldBlock ?? this.oldBlock,
       onPause: onPause ?? this.onPause,
       soundOn: soundOn ?? this.soundOn,

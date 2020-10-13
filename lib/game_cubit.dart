@@ -4,13 +4,13 @@ import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tetris/blocks.dart';
-import 'package:tetris/shape.dart';
 
 import 'constants.dart';
 import 'game_state.dart';
 import 'randomizer.dart';
 
 class GameCubit extends Cubit<GameState> {
+  Randomizer _randomizer;
   Duration _duration;
   bool onFastHorizontalMoving = false;
   bool onFastVerticalMoving = false;
@@ -24,11 +24,12 @@ class GameCubit extends Cubit<GameState> {
     @required int initialLevel,
   }) : super(GameState(
           glass: {},
-          oldBlock: Block([]),
-          shape: Shape.empty(),
-          nextShape: Shape.empty(),
+          oldBlock: EmptyBlock(),
+          currentBlock: EmptyBlock(),
+          nextBlock: EmptyBlock(),
           level: initialLevel,
-        )) {
+        ),) {
+    _randomizer = Randomizer();
     _initialLevel = initialLevel;
     _setDuration(initialLevel);
     _player = AssetsAudioPlayer.newPlayer();
@@ -55,20 +56,19 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void startGame([Duration duration]) {
-    if (state.shape.isEmpty) {
-      state.shape = Randomizer.shape;
-      state.nextShape = Randomizer.shape;
+    if (state.currentBlock.isEmpty) {
+      state.currentBlock = _randomizer.block;
+      state.nextBlock = _randomizer.block;
       _shapeToGlass();
     }
     _timer = Timer.periodic(duration ?? _duration, (timer) async {
       if (_moveDown()) {
         return;
       }
-      final landingResult = _burningActions();
-      print(landingResult);
+      final landingResult = _landingActions();
       _landingSound(landingResult);
       if (!_gameOverCondition()) {
-        state.onNextShape();
+        state.onNextBlock(_randomizer.block);
         _addNewShape();
       }
       if (onFastVerticalMoving) {
@@ -148,11 +148,11 @@ class GameCubit extends Cubit<GameState> {
     }
   }
 
-  Block get currentBlock => state.shape.block;
+  Block get currentBlock => state.currentBlock;
 
   List<int> get currentLocation => currentBlock.location;
 
-  Color get currentColor => state.shape.color;
+  Color get currentColor => currentBlock.color;
 
   List<int> get oldLocation => state.oldBlock.location;
 
@@ -189,7 +189,7 @@ class GameCubit extends Cubit<GameState> {
     startGame();
   }
 
-  ResultShapeLanding _burningActions() {
+  ResultShapeLanding _landingActions() {
     final glassLines = state.glassLines;
     Map<int, Color> tempoMap = {};
     var lineCounter = 0;
@@ -202,7 +202,7 @@ class GameCubit extends Cubit<GameState> {
     });
     ResultShapeLanding result = ResultShapeLanding(linesBurned: lineCounter);
     if (lineCounter != 0) {
-      state.changeLocation(state.shape.block.tryMoveDown(lineCounter).location);
+      state.changeLocation(currentBlock.tryMoveDown(lineCounter).location);
       final score = state.score +  Constants.scores[lineCounter];
       final level = (score /  Constants.scoresInLevel).floor() + 1;
       if (level != state.level) {
@@ -223,7 +223,7 @@ class GameCubit extends Cubit<GameState> {
       await _player.open(Audio('assets/sounds/${Constants.burningSounds[result.linesBurned]}'), autoStart: true);
     }
     if (result.levelUpgrade) {
-      _player.open(Audio('assets/sounds/${Randomizer.levelUpgradeSound}'), autoStart: true);
+      _player.open(Audio('assets/sounds/${_randomizer.levelUpgradeSound}'), autoStart: true);
     }
   }
 
@@ -233,7 +233,7 @@ class GameCubit extends Cubit<GameState> {
       map[point] = Colors.black;
     }
     for (final point in newLocation ?? currentLocation) {
-      map[point] = state.shape.color;
+      map[point] = currentBlock.color;
     }
     emit(state.copyWith(glass: map));
   }
@@ -241,7 +241,7 @@ class GameCubit extends Cubit<GameState> {
   void _addNewShape() {
     Map<int, Color> map = state.glass;
     for (final point in currentLocation) {
-      map[point] = state.shape.color;
+      map[point] = currentBlock.color;
     }
     emit(state.copyWith(glass: map));
   }

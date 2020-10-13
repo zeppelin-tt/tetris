@@ -144,7 +144,7 @@ class GamePage extends StatelessWidget {
                                               height: sideWidth * .75 / 4.6,
                                               width: sideWidth * .75 / 4.6,
                                               decoration: BoxDecoration(
-                                                color: game.nextShape.nextLocationView[index],
+                                                color: game.nextBlock.nextLocationView[index],
                                                 borderRadius: BorderRadius.circular(sideWidth * .08 / 4.6),
                                               ),
                                             ),

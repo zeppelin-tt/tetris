@@ -1,50 +1,72 @@
 import 'dart:math';
 
-import 'package:flutter/material.dart';
-import 'package:tetris/shape.dart';
-
 import 'blocks.dart';
 import 'constants.dart';
 
 class Randomizer {
-  static final _rnd = Random();
+  final _rnd = Random();
+  Map<int, BlockType> pool;
+  Map<BlockType, int> counters;
 
-  static Shape get shape {
+  Randomizer() {
+    initPoolAndCounters();
+  }
+
+  void initPoolAndCounters() {
+    final list = BlockType.values.expand((b) => List.generate(7, (_) => b)).toList();
+    var counter = 0;
+    pool = {for (var i in list) counter++: i};
+    counters = {for (var i in BlockType.values) i: 0};
+  }
+
+  void increaseCounter(BlockType currentType) {
+    for (var type in BlockType.values) {
+      counters[type] = currentType == type ? 0 : ++counters[type];
+    }
+  }
+
+  BlockType get maxAntiquityType {
+    return counters.entries.reduce((curr, next) => curr.value > next.value ? curr : next).key;
+  }
+
+  Block get block {
     Block block;
-    final blocks = Blocks.values;
-    switch (blocks[_rnd.nextInt(Blocks.values.length)]) {
-      case Blocks.smashboy:
+    final blockIndex = _rnd.nextInt(pool.length);
+    final blockType = pool[blockIndex];
+    switch (blockType) {
+      case BlockType.smashboy:
         block = Smashboy(Smashboy.initStates.first);
         break;
-      case Blocks.orange_ricky:
+      case BlockType.orange_ricky:
         block = OrangeRicky(OrangeRicky.initStates[_rnd.nextInt(OrangeRicky.initStates.length)]);
         break;
-      case Blocks.blue_ricky:
+      case BlockType.blue_ricky:
         block = BlueRicky(BlueRicky.initStates[_rnd.nextInt(BlueRicky.initStates.length)]);
         break;
-      case Blocks.rhode_island:
+      case BlockType.rhode_island:
         block = RhodeIsland(RhodeIsland.initStates[_rnd.nextInt(RhodeIsland.initStates.length)]);
         break;
-      case Blocks.cleveland:
+      case BlockType.cleveland:
         block = Cleveland(Cleveland.initStates[_rnd.nextInt(Cleveland.initStates.length)]);
         break;
-      case Blocks.hero_block:
+      case BlockType.hero_block:
         block = HeroBlock(HeroBlock.initStates[_rnd.nextInt(HeroBlock.initStates.length)]);
         break;
-      case Blocks.teewee:
+      case BlockType.teewee:
         block = Teewee(Teewee.initStates[_rnd.nextInt(Teewee.initStates.length)]);
         break;
     }
-    return Shape(block: block, color: color);
+    pool[blockIndex] = maxAntiquityType;
+    increaseCounter(blockType);
+    print(counters);
+    return block;
   }
 
-  static String get levelUpgradeSound {
+  String get levelUpgradeSound {
     return Constants.levelUpgradeSounds[_rnd.nextInt(Constants.levelUpgradeSounds.length)];
   }
 
-  static String get layoutSound => Constants.layoutSounds[_rnd.nextInt(Constants.layoutSounds.length)];
-
-  static Color get color => Constants.colorList[_rnd.nextInt(Constants.colorList.length)];
+  String get layoutSound => Constants.layoutSounds[_rnd.nextInt(Constants.layoutSounds.length)];
 }
 
-enum Blocks { smashboy, orange_ricky, blue_ricky, rhode_island, cleveland, hero_block, teewee }
+enum BlockType { smashboy, orange_ricky, blue_ricky, rhode_island, cleveland, hero_block, teewee }
