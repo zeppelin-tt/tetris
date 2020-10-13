@@ -22,13 +22,15 @@ class GameCubit extends Cubit<GameState> {
 
   GameCubit({
     @required int initialLevel,
-  }) : super(GameState(
-          glass: {},
-          oldBlock: EmptyBlock(),
-          currentBlock: EmptyBlock(),
-          nextBlock: EmptyBlock(),
-          level: initialLevel,
-        ),) {
+  }) : super(
+          GameState(
+            glass: {},
+            oldBlock: EmptyBlock(),
+            currentBlock: EmptyBlock(),
+            nextBlock: EmptyBlock(),
+            level: initialLevel,
+          ),
+        ) {
     _randomizer = Randomizer();
     _initialLevel = initialLevel;
     _setDuration(initialLevel);
@@ -37,22 +39,26 @@ class GameCubit extends Cubit<GameState> {
 
   void newGame([int initLevel]) {
     _setDuration(initLevel ?? _initialLevel ?? 1);
-    clearGlass(changeLevel: initLevel);
+    createGlass(changeLevel: initLevel);
     startGame();
   }
 
-  void clearGlass({
+  void createGlass({
     int changeLevel,
   }) {
+    emit(state.copyWith(glass: _clearGlass, isGameOver: false, onPause: false, score: 0, level: changeLevel));
+  }
+
+  Map<int, Color> get _clearGlass {
     final Map<int, Color> glass = {};
     for (int i = -48; i < 252; i++) {
-      if (i % 12 == 0 || (i + 1) % 12 == 0 || i + 12 > 252) {
+      if (i % 12 == 0 || (i + 1) % 12 == 0 || i > 240) {
         glass[i] = Colors.white;
         continue;
       }
       glass[i] = Colors.black;
     }
-    emit(state.copyWith(glass: glass, isGameOver: false, onPause: false, score: 0, level: changeLevel));
+    return glass;
   }
 
   void startGame([Duration duration]) {
@@ -123,7 +129,7 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void stopHorizontalMove() {
-    if(_horizontalMoveTimer != null && _horizontalMoveTimer.isActive) {
+    if (_horizontalMoveTimer != null && _horizontalMoveTimer.isActive) {
       _horizontalMoveTimer.cancel();
     }
   }
@@ -191,20 +197,28 @@ class GameCubit extends Cubit<GameState> {
 
   ResultShapeLanding _landingActions() {
     final glassLines = state.glassLines;
-    Map<int, Color> tempoMap = {};
-    var lineCounter = 0;
-    glassLines.forEach((key, value) {
-      tempoMap.addAll(value);
-      if (value.values.every((c) => c != Colors.black) && key != 20) {
-        tempoMap = _topCollapse(tempoMap, value.keys.toList());
-        lineCounter++;
+    var burningLines = <int>[];
+    glassLines.forEach((lineIndex, Map<int, Color> lineMap) {
+      if (lineMap.values.every((c) => c != Colors.black)) {
+        burningLines.add(lineIndex);
       }
     });
-    ResultShapeLanding result = ResultShapeLanding(linesBurned: lineCounter);
-    if (lineCounter != 0) {
-      state.changeLocation(currentBlock.tryMoveDown(lineCounter).location);
-      final score = state.score +  Constants.scores[lineCounter];
-      final level = (score /  Constants.scoresInLevel).floor() + 1;
+    final tempoMap = _clearGlass;
+    var shift = 0;
+    for (var i = 19; i >= 0; i--) {
+      if (burningLines.contains(i)) {
+        shift++;
+        continue;
+      }
+      glassLines[i].forEach((key, value) {
+        tempoMap[key + 12 * shift] = value;
+      });
+    }
+    ResultShapeLanding result = ResultShapeLanding(linesBurned: burningLines.length);
+    if (burningLines.isNotEmpty) {
+      state.changeLocation(currentBlock.tryMoveDown(burningLines.length).location);
+      final score = state.score + Constants.scores[burningLines.length];
+      final level = (score / Constants.scoresInLevel).floor() + 1;
       if (level != state.level) {
         result.levelUpgrade = true;
         _setDuration(level);
@@ -249,9 +263,7 @@ class GameCubit extends Cubit<GameState> {
   Map<int, Color> _topCollapse(Map<int, Color> pixels, List<int> burningLine) {
     Map<int, Color> map = Map.of(state.glass);
     for (final point in burningLine..addAll(pixels.keys)) {
-      if ( Constants.glassSides.every((i) => i != point)) {
-        map[point] = Colors.black;
-      }
+      map[point] = Colors.black;
     }
     return map..addAll(pixels.map((key, value) => MapEntry(key + 12, value)));
   }

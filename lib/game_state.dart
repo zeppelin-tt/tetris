@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tetris/randomizer.dart';
+import 'package:tetris/constants.dart';
 
 import 'blocks.dart';
 
@@ -42,21 +42,16 @@ class GameState {
 
   Map<int, Map<int, Color>> get glassLines {
     final Map<int, Map<int, Color>> glassMap = Map.fromIterable(
-      List.generate(21, (i) => i),
+      List.generate(20, (i) => i),
       key: (item) => item,
       value: (item) => <int, Color>{},
     );
-    var tempoLineIndex = 0;
-    glass.entries.forEach((e) {
-      if (e.key >= 0) {
-        if (e.key <= 251) {
-          glassMap[tempoLineIndex][e.key] = e.value;
-        }
-        if (e.key % 12 == 11) {
-          tempoLineIndex++;
-        }
+    for (var point in glass.entries) {
+      final column = point.key % 12;
+      if (point.key >= 0 && point.key <= 238 && !Constants.glassSides.contains(column)) {
+          glassMap[(point.key / 12).floor()][point.key] = point.value;
       }
-    });
+    }
     return glassMap;
   }
 

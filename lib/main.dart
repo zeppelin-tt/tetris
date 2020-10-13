@@ -40,7 +40,7 @@ class GamePage extends StatelessWidget {
           return BlocProvider<GameCubit>(
             lazy: false,
             create: (context) => GameCubit(initialLevel: 1)
-              ..clearGlass()
+              ..createGlass()
               ..startGame(),
             child: BlocConsumer<GameCubit, GameState>(
               listener: (BuildContext context, state) {

@@ -6,7 +6,7 @@ class Block {
 
   Block(this.location, this.color);
 
-  Block tryTwist() => copyWith(location: location);
+  Block tryTwist() => copyWith();
 
   Block tryMoveRight(int pixels) => copyWith(location: List.of(location.map((i) => i + pixels)));
 
@@ -19,7 +19,7 @@ class Block {
   Block copyWith({
     List<int> location,
   }) {
-    return Block(location ?? this.location, color ?? this.color);
+    return Block(location ?? List.from(this.location), color ?? this.color);
   }
 
   @override
@@ -124,8 +124,9 @@ class HeroBlock extends Block {
   @override
   HeroBlock copyWith({
     List<int> location,
-  }) =>
-      HeroBlock(location ?? this.location);
+  }) {
+    return HeroBlock(location ?? List.from(this.location));
+  }
 }
 
 class Smashboy extends Block {
@@ -139,7 +140,7 @@ class Smashboy extends Block {
   Smashboy copyWith({
     List<int> location,
   }) {
-    return Smashboy(location ?? this.location);
+    return Smashboy(location ?? List.from(this.location));
   }
 }
 
@@ -171,7 +172,7 @@ class Teewee extends Block {
   Teewee copyWith({
     List<int> location,
   }) {
-    return Teewee(location ?? this.location);
+    return Teewee(location ?? List.from(this.location));
   }
 }
 
@@ -197,7 +198,7 @@ class RhodeIsland extends Block {
   RhodeIsland copyWith({
     List<int> location,
   }) {
-    return RhodeIsland(location ?? this.location);
+    return RhodeIsland(location ?? List.from(this.location));
   }
 }
 
@@ -223,7 +224,7 @@ class Cleveland extends Block {
   Cleveland copyWith({
     List<int> location,
   }) {
-    return Cleveland(location ?? this.location);
+    return Cleveland(location ?? List.from(this.location));
   }
 }
 
@@ -255,7 +256,7 @@ class OrangeRicky extends Block {
   OrangeRicky copyWith({
     List<int> location,
   }) {
-    return OrangeRicky(location ?? this.location);
+    return OrangeRicky(location ?? List.from(this.location));
   }
 }
 
@@ -287,6 +288,6 @@ class BlueRicky extends Block {
   BlueRicky copyWith({
     List<int> location,
   }) {
-    return BlueRicky(location ?? this.location);
+    return BlueRicky(location ?? List.from(this.location));
   }
 }
