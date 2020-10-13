@@ -46,7 +46,13 @@ class GameCubit extends Cubit<GameState> {
   void createGlass({
     int changeLevel,
   }) {
-    emit(state.copyWith(glass: _clearGlass, isGameOver: false, onPause: false, score: 0, level: changeLevel));
+    emit(state.copyWith(
+      glass: _clearGlass,
+      isGameOver: false,
+      onPause: false,
+      score: 0,
+      level: changeLevel,
+    ));
   }
 
   Map<int, Color> get _clearGlass {
@@ -123,9 +129,7 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void horizontalMoveFast(GlassSide side) {
-    _horizontalMoveTimer = Timer.periodic(Duration(milliseconds: 50), (timer) {
-      horizontalMove(side);
-    });
+    _horizontalMoveTimer = Timer.periodic(Constants.fastHorizontalMoveDuration, (timer) => horizontalMove(side));
   }
 
   void stopHorizontalMove() {
@@ -186,7 +190,7 @@ class GameCubit extends Cubit<GameState> {
   void toDownFast() {
     onFastVerticalMoving = true;
     _timer.cancel();
-    startGame(const Duration(milliseconds: 30));
+    startGame(Constants.fastDownMoveDuration);
   }
 
   void stopDownFastMove() {
@@ -258,14 +262,6 @@ class GameCubit extends Cubit<GameState> {
       map[point] = currentBlock.color;
     }
     emit(state.copyWith(glass: map));
-  }
-
-  Map<int, Color> _topCollapse(Map<int, Color> pixels, List<int> burningLine) {
-    Map<int, Color> map = Map.of(state.glass);
-    for (final point in burningLine..addAll(pixels.keys)) {
-      map[point] = Colors.black;
-    }
-    return map..addAll(pixels.map((key, value) => MapEntry(key + 12, value)));
   }
 
   Duration _getDuration(int level) {

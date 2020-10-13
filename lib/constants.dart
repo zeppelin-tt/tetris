@@ -9,6 +9,10 @@ class Constants {
 
   static const firstLevelDurationMills = 800;
 
+  static const fastDownMoveDuration = Duration(milliseconds: 25);
+
+  static const fastHorizontalMoveDuration = Duration(milliseconds: 35);
+
   static const burningSounds = {
     1: 'burn_1.wav',
     2: 'burn_2.wav',
