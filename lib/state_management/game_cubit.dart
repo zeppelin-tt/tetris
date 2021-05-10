@@ -2,27 +2,29 @@ import 'dart:async';
 
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tetris/blocks.dart';
 
-import 'constants.dart';
+import '../constants.dart';
+import '../randomizer.dart';
 import 'game_state.dart';
-import 'randomizer.dart';
 
 class GameCubit extends Cubit<GameState> {
-  Randomizer _randomizer;
-  Duration _duration;
+  late Randomizer _randomizer;
+  Duration? _duration;
   bool onFastHorizontalMoving = false;
   bool onFastVerticalMoving = false;
-  int _initialLevel;
-  Timer _timer;
-  Timer _horizontalMoveTimer;
+  final int _initialLevel;
+  late Timer _timer;
+  Timer? _horizontalMoveTimer;
 
-  AssetsAudioPlayer _player;
+  late AssetsAudioPlayer _player;
 
   GameCubit({
-    @required int initialLevel,
-  }) : super(
+    required int initialLevel,
+  })  : _initialLevel = initialLevel,
+        super(
           GameState(
             glass: {},
             oldBlock: EmptyBlock(),
@@ -32,19 +34,18 @@ class GameCubit extends Cubit<GameState> {
           ),
         ) {
     _randomizer = Randomizer();
-    _initialLevel = initialLevel;
     _setDuration(initialLevel);
     _player = AssetsAudioPlayer.newPlayer();
   }
 
-  void newGame([int initLevel]) {
-    _setDuration(initLevel ?? _initialLevel ?? 1);
+  void newGame([int? initLevel]) {
+    _setDuration(initLevel ?? _initialLevel);
     createGlass(changeLevel: initLevel);
     startGame();
   }
 
   void createGlass({
-    int changeLevel,
+    int? changeLevel,
   }) {
     emit(state.copyWith(
       glass: _clearGlass,
@@ -67,13 +68,13 @@ class GameCubit extends Cubit<GameState> {
     return glass;
   }
 
-  void startGame([Duration duration]) {
-    if (state.currentBlock.isEmpty) {
+  void startGame([Duration? duration]) {
+    if (state.currentBlock!.isEmpty) {
       state.currentBlock = _randomizer.block;
       state.nextBlock = _randomizer.block;
       _shapeToGlass();
     }
-    _timer = Timer.periodic(duration ?? _duration, (timer) async {
+    _timer = Timer.periodic(duration ?? _duration!, (timer) async {
       if (_moveDown()) {
         return;
       }
@@ -112,13 +113,13 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void horizontalMove(GlassSide side) {
-    var possibleBlock;
+    late var possibleBlock;
     switch (side) {
       case GlassSide.right:
-        possibleBlock = currentBlock.tryMoveRight(1);
+        possibleBlock = currentBlock!.tryMoveRight(1);
         break;
       case GlassSide.left:
-        possibleBlock = currentBlock.tryMoveLeft(1);
+        possibleBlock = currentBlock!.tryMoveLeft(1);
         break;
     }
     if (_isCollision(possibleBlock.location)) {
@@ -133,14 +134,14 @@ class GameCubit extends Cubit<GameState> {
   }
 
   void stopHorizontalMove() {
-    if (_horizontalMoveTimer != null && _horizontalMoveTimer.isActive) {
-      _horizontalMoveTimer.cancel();
+    if (_horizontalMoveTimer != null && _horizontalMoveTimer!.isActive) {
+      _horizontalMoveTimer!.cancel();
     }
   }
 
   void twist() {
     if (state.onPause) return;
-    Block possibleBlock = currentBlock.tryTwist();
+    Block possibleBlock = currentBlock!.tryTwist();
     final collisionPixels = _collisionPixels(possibleBlock.location);
     if (collisionPixels.isEmpty) {
       state.changeLocation(possibleBlock.location);
@@ -148,9 +149,8 @@ class GameCubit extends Cubit<GameState> {
       return;
     }
     final collisionShift = possibleBlock.collisionShift(collisionPixels);
-    Block afterShiftPossibleBlock = collisionShift.isNegative
-        ? possibleBlock.tryMoveLeft(collisionShift.abs())
-        : possibleBlock.tryMoveRight(collisionShift);
+    Block afterShiftPossibleBlock =
+        collisionShift.isNegative ? possibleBlock.tryMoveLeft(collisionShift.abs()) : possibleBlock.tryMoveRight(collisionShift);
     final afterShiftCollisionPixels = _collisionPixels(afterShiftPossibleBlock.location);
     if (afterShiftCollisionPixels.isEmpty) {
       state.changeLocation(afterShiftPossibleBlock.location);
@@ -158,22 +158,22 @@ class GameCubit extends Cubit<GameState> {
     }
   }
 
-  Block get currentBlock => state.currentBlock;
+  Block? get currentBlock => state.currentBlock;
 
-  List<int> get currentLocation => currentBlock.location;
+  List<int> get currentLocation => currentBlock!.location;
 
-  Color get currentColor => currentBlock.color;
+  Color get currentColor => currentBlock!.color;
 
-  List<int> get oldLocation => state.oldBlock.location;
+  List<int> get oldLocation => state.oldBlock!.location;
 
-  bool _isCollision(List<int> newLocation) => _collisionPixels(newLocation).isNotEmpty;
+  bool _isCollision(List<int>? newLocation) => _collisionPixels(newLocation).isNotEmpty;
 
-  List<int> _collisionPixels(List<int> newLocation) {
-    return state.occupiedPixels.where((p) => !currentLocation.contains(p) && newLocation.contains(p)).toList();
+  List<int> _collisionPixels(List<int>? newLocation) {
+    return state.occupiedPixels.where((p) => !currentLocation.contains(p) && newLocation!.contains(p)).toList();
   }
 
   bool _moveDown() {
-    final possibleBlock = currentBlock.tryMoveDown();
+    final possibleBlock = currentBlock!.tryMoveDown();
     if (_isCollision(possibleBlock.location)) {
       return false;
     }
@@ -201,7 +201,7 @@ class GameCubit extends Cubit<GameState> {
 
   ResultShapeLanding _landingActions() {
     final glassLines = state.glassLines;
-    var burningLines = <int>[];
+    var burningLines = <int?>[];
     glassLines.forEach((lineIndex, Map<int, Color> lineMap) {
       if (lineMap.values.every((c) => c != Colors.black)) {
         burningLines.add(lineIndex);
@@ -214,14 +214,14 @@ class GameCubit extends Cubit<GameState> {
         shift++;
         continue;
       }
-      glassLines[i].forEach((key, value) {
+      glassLines[i]!.forEach((key, value) {
         tempoMap[key + 12 * shift] = value;
       });
     }
     ResultShapeLanding result = ResultShapeLanding(linesBurned: burningLines.length);
     if (burningLines.isNotEmpty) {
-      state.changeLocation(currentBlock.tryMoveDown(burningLines.length).location);
-      final score = state.score + Constants.scores[burningLines.length];
+      state.changeLocation(currentBlock!.tryMoveDown(burningLines.length).location);
+      final score = state.score + Constants.scores[burningLines.length]!;
       final level = (score / Constants.scoresInLevel).floor() + 1;
       if (level != state.level) {
         result.levelUpgrade = true;
@@ -245,26 +245,26 @@ class GameCubit extends Cubit<GameState> {
     }
   }
 
-  void _shapeToGlass([List<int> newLocation]) {
-    Map<int, Color> map = state.glass;
+  void _shapeToGlass([List<int>? newLocation]) {
+    Map<int, Color>? map = state.glass;
     for (final point in oldLocation) {
-      map[point] = Colors.black;
+      map![point] = Colors.black;
     }
     for (final point in newLocation ?? currentLocation) {
-      map[point] = currentBlock.color;
+      map![point] = currentBlock!.color;
     }
     emit(state.copyWith(glass: map));
   }
 
   void _addNewShape() {
-    Map<int, Color> map = state.glass;
+    Map<int, Color>? map = state.glass;
     for (final point in currentLocation) {
-      map[point] = currentBlock.color;
+      map![point] = currentBlock!.color;
     }
     emit(state.copyWith(glass: map));
   }
 
-  Duration _getDuration(int level) {
+  Duration _getDuration(int? level) {
     var mills = Constants.firstLevelDurationMills;
     for (var i = 1; i != level; i++) {
       mills = (mills * .87).floor();
@@ -272,9 +272,36 @@ class GameCubit extends Cubit<GameState> {
     return Duration(milliseconds: mills);
   }
 
-  void _setDuration([int level]) => _duration = _getDuration(level ?? state.level);
+  void _setDuration([int? level]) => _duration = _getDuration(level ?? state.level);
 
   void toggleSound() => emit(state.copyWith(soundOn: !state.soundOn));
+
+  void onKeyboardEvent(RawKeyEvent event) {
+    if (event.pressedAny([LogicalKeyboardKey.arrowRight, LogicalKeyboardKey.keyD, LogicalKeyboardKey.numpad6])) {
+      horizontalMove(GlassSide.right);
+    }
+    if (event.pressedAny([LogicalKeyboardKey.arrowLeft, LogicalKeyboardKey.keyA, LogicalKeyboardKey.numpad4])) {
+      horizontalMove(GlassSide.left);
+    }
+    if (event.pressedAny([LogicalKeyboardKey.arrowDown, LogicalKeyboardKey.keyS, LogicalKeyboardKey.numpad2, LogicalKeyboardKey.numpad5])) {
+      moveDown();
+    }
+    if (event.pressedAny([LogicalKeyboardKey.controlLeft, LogicalKeyboardKey.controlRight, LogicalKeyboardKey.space])) {
+      twist();
+    }
+    if (event.isKeyPressed(LogicalKeyboardKey.keyP)) {
+      togglePause();
+    }
+  }
+}
+
+extension on RawKeyEvent {
+  bool pressedAny(List<LogicalKeyboardKey> keys) {
+    for (final key in keys) {
+      if (isKeyPressed(key)) return true;
+    }
+    return false;
+  }
 }
 
 class ResultShapeLanding {
@@ -282,7 +309,7 @@ class ResultShapeLanding {
   bool levelUpgrade;
 
   ResultShapeLanding({
-    @required this.linesBurned,
+    required this.linesBurned,
     this.levelUpgrade = false,
   });
 

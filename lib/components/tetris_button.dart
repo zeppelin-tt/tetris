@@ -7,21 +7,21 @@ class TetrisButton extends StatefulWidget {
   final double iconSize;
   final Color color;
   final Color onPressColor;
-  final GestureTapCallback onTap;
-  final GestureLongPressStartCallback onLongPressStart;
-  final GestureLongPressEndCallback onLongPressEnd;
-  final GestureTapDownCallback onTapDown;
+  final GestureTapCallback? onTap;
+  final GestureLongPressStartCallback? onLongPressStart;
+  final GestureLongPressEndCallback? onLongPressEnd;
+  final GestureTapDownCallback? onTapDown;
 
 
   @override
   _TetrisButtonState createState() => _TetrisButtonState();
 
   const TetrisButton({
-    @required this.size,
-    @required this.icon,
-    @required this.iconSize,
-    @required this.color,
-    @required this.onPressColor,
+    required this.size,
+    required this.icon,
+    required this.iconSize,
+    required this.color,
+    required this.onPressColor,
     this.onTap,
     this.onLongPressStart,
     this.onLongPressEnd,
@@ -39,26 +39,26 @@ class _TetrisButtonState extends State<TetrisButton> {
         HapticFeedback.lightImpact();
         setState(() => onPressed = true);
         if (widget.onLongPressStart != null) {
-          widget.onLongPressStart(details);
+          widget.onLongPressStart!(details);
         }
       },
       onLongPressEnd: (details) {
         setState(() => onPressed = false);
         if (widget.onLongPressEnd != null) {
-          widget.onLongPressEnd(details);
+          widget.onLongPressEnd!(details);
         }
       },
       onTapDown: (details) {
         HapticFeedback.lightImpact();
         setState(() => onPressed = true);
         if (widget.onTapDown != null) {
-          widget.onTapDown(details);
+          widget.onTapDown!(details);
         }
       },
       onTapUp: (_) {
         setState(() => onPressed = false);
         if (widget.onTap != null) {
-          widget.onTap();
+          widget.onTap!();
         }
       },
       onTapCancel: () => setState(() => onPressed = false),

@@ -17,9 +17,9 @@ class Block {
   void changeLocation(List<int> newLocation) => location = List.of(newLocation);
 
   Block copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
-    return Block(location ?? List.from(this.location), color ?? this.color);
+    return Block(location ?? List.from(this.location), color);
   }
 
   @override
@@ -36,7 +36,7 @@ class Block {
     return Map.fromIterable(
       List.generate(16, (i) => i),
       key: (i) => i,
-      value: (i) => nextLocation.contains(i) ? color : Colors.grey[800],
+      value: (i) => nextLocation.contains(i) ? color : Colors.grey[800]!,
     );
   }
 
@@ -96,14 +96,13 @@ class EmptyBlock extends Block {
 
   @override
   EmptyBlock copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return EmptyBlock();
   }
 }
 
 class HeroBlock extends Block {
-
   HeroBlock(List<int> locations) : super(locations, Colors.yellow);
 
   static const initStates = [
@@ -123,7 +122,7 @@ class HeroBlock extends Block {
 
   @override
   HeroBlock copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return HeroBlock(location ?? List.from(this.location));
   }
@@ -138,7 +137,7 @@ class Smashboy extends Block {
 
   @override
   Smashboy copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return Smashboy(location ?? List.from(this.location));
   }
@@ -170,7 +169,7 @@ class Teewee extends Block {
 
   @override
   Teewee copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return Teewee(location ?? List.from(this.location));
   }
@@ -196,7 +195,7 @@ class RhodeIsland extends Block {
 
   @override
   RhodeIsland copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return RhodeIsland(location ?? List.from(this.location));
   }
@@ -222,7 +221,7 @@ class Cleveland extends Block {
 
   @override
   Cleveland copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return Cleveland(location ?? List.from(this.location));
   }
@@ -254,7 +253,7 @@ class OrangeRicky extends Block {
 
   @override
   OrangeRicky copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return OrangeRicky(location ?? List.from(this.location));
   }
@@ -286,7 +285,7 @@ class BlueRicky extends Block {
 
   @override
   BlueRicky copyWith({
-    List<int> location,
+    List<int>? location,
   }) {
     return BlueRicky(location ?? List.from(this.location));
   }

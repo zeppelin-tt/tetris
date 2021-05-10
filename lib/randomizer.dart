@@ -5,8 +5,8 @@ import 'constants.dart';
 
 class Randomizer {
   final _rnd = Random();
-  Map<int, BlockType> pool;
-  Map<BlockType, int> counters;
+  late Map<int, BlockType> pool;
+  late Map<BlockType, int> counters;
 
   Randomizer() {
     initPoolAndCounters();
@@ -20,8 +20,9 @@ class Randomizer {
   }
 
   void increaseCounter(BlockType currentType) {
-    for (var type in BlockType.values) {
-      counters[type] = currentType == type ? 0 : ++counters[type];
+    for (final type in BlockType.values) {
+      final newCount = counters[type]! + 1;
+      counters[type] = currentType == type ? 0 : newCount;
     }
   }
 
@@ -29,10 +30,10 @@ class Randomizer {
     return counters.entries.reduce((curr, next) => curr.value > next.value ? curr : next).key;
   }
 
-  Block get block {
-    Block block;
+  Block? get block {
+    Block? block;
     final blockIndex = _rnd.nextInt(pool.length);
-    final blockType = pool[blockIndex];
+    final blockType = pool[blockIndex]!;
     switch (blockType) {
       case BlockType.smashboy:
         block = Smashboy(Smashboy.initStates.first);
@@ -55,6 +56,8 @@ class Randomizer {
       case BlockType.teewee:
         block = Teewee(Teewee.initStates[_rnd.nextInt(Teewee.initStates.length)]);
         break;
+      default:
+        block = Teewee(Teewee.initStates[_rnd.nextInt(Teewee.initStates.length)]);
     }
     pool[blockIndex] = maxAntiquityType;
     increaseCounter(blockType);
